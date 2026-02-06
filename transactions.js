@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', function() {
         allTransactions.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
     }
 
-    renderTable(allTransactions.slice(0, 10)); // Initially show the latest 10
+    renderTable(allTransactions.slice(0, 10));
 
     document.getElementById('filterSelect').addEventListener('change', filterTransactions);
     document.getElementById('downloadExcel').addEventListener('click', downloadExcel);

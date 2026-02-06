@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Budget Tracker - Dashboard</title>
+    <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="dashboard.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
@@ -43,22 +43,15 @@
                 </div>
             </section>
 
-            <section class="top-categories">
-                <h2>Top Spending Categories</h2>
-                <div id="topCategoriesList" class="categories-list">
-                    <!-- Top categories will be displayed here -->
-                </div>
-            </section>
-
             <section class="visualizations">
                 <h2>Financial Visualizations</h2>
                 <div class="charts-container">
                     <div class="chart-wrapper">
-                        <h3>Spending by Category (Pie Chart)</h3>
-                        <canvas id="pieChart"></canvas>
+                        <h3>Spending by Category</h3>
+                        <canvas id="doughnutChart"></canvas>
                     </div>
                     <div class="chart-wrapper">
-                        <h3>Spending Trends (Bar Chart)</h3>
+                        <h3>Spending Trends</h3>
                         <canvas id="barChart"></canvas>
                     </div>
                 </div>
@@ -68,7 +61,7 @@
         <footer>
             <nav>
                 <a href="index.html">Home</a>
-                <a href="index.html">Transactions</a>
+                <a href="transactions.html">Transactions</a>
                 <a href="dashboard.html" class="active">Dashboard</a>
             </nav>
         </footer>

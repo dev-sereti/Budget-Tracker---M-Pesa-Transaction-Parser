@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (storedData) {
         allTransactions = JSON.parse(storedData);
-        // Sort by timestamp descending (newest first)
+        // Sort by timestamp descending (newest first) if timestamp exists
         allTransactions.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
     }
 
@@ -20,19 +20,21 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('downloadExcel').addEventListener('click', downloadExcel);
 });
 
-// 3. Function to draw the table rows (now including balance)
+// 3. Function to draw the table rows
 function renderTable(data) {
     const tbody = document.getElementById('transactionsBody');
     tbody.innerHTML = ''; // Clear existing rows
 
     if (data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding: 20px;">No transactions found.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: 20px;">No transactions found.</td></tr>';
         return;
     }
 
     // Loop through data and create rows
     data.forEach(t => {
         const row = document.createElement('tr');
+
+        // Calculate total if not already there
         const total = (t.totalAmount !== undefined) ? t.totalAmount : (t.amount + t.fee);
 
         row.innerHTML = `
@@ -42,7 +44,6 @@ function renderTable(data) {
             <td>Ksh ${parseFloat(t.fee).toFixed(2)}</td>
             <td><span class="category-badge">${t.category}</span></td>
             <td style="font-weight:bold;">Ksh ${parseFloat(total).toFixed(2)}</td>
-            <td>Ksh ${parseFloat(t.balance).toFixed(2)}</td>  <!-- Add balance column -->
         `;
         tbody.appendChild(row);
     });
@@ -95,7 +96,7 @@ function downloadExcel() {
         "Transaction Fee (Ksh)": t.fee,
         "Category": t.category,
         "Total Amount (Ksh)": t.totalAmount || (t.amount + t.fee),
-        "Balance (Ksh)": t.balance  // Include balance in Excel
+        "Balance (Ksh)": t.balance || 0
     }));
 
     // Generate Sheet

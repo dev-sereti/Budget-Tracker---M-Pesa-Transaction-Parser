@@ -20,36 +20,96 @@ document.addEventListener('DOMContentLoaded', function() {
 // Parse M-Pesa transaction message
 function parseTransaction() {
     const message = document.getElementById('transactionInput').value.trim();
+    const resultsDiv = document.getElementById('parsedResults');
+    
     if (!message) {
         alert('Please enter a transaction message');
         return;
     }
-    
-    // Regular expression to extract date, time, code, amount, fee, and balance
-    // This pattern matches common M-Pesa formats
-    const regex = /(\d{1,2}\/\d{1,2}\/\d{4})\s+(\d{1,2}:\d{2}\s*[AP]M)\s+.*?(\w{10,15})\s+Ksh\s*([\d,]+(?:\.\d+)?)\s+.*?Ksh\s*([\d,]+(?:\.\d+)?)\s+.*?Ksh\s*([\d,]+(?:\.\d+)?)/i;
-    
-    const match = message.match(regex);
-    
-    if (!match) {
-        // Try alternative pattern for different M-Pesa message format
-        const altRegex = /(\d{1,2}\/\d{1,2}\/\d{4})\s+(\d{1,2}:\d{2}\s*[AP]M)\s+.*?(\w{10,15})\s+Ksh\s*([\d,]+(?:\.\d+)?)\s+.*?Ksh\s*([\d,]+(?:\.\d+)?)\s+.*?balance\s+Ksh\s*([\d,]+(?:\.\d+)?)/i;
-        const altMatch = message.match(altRegex);
+
+    try {
+        // Updated Regex to match the message in your screenshot:
+        // Group 1: Transaction Code (e.g., UB6676349H)
+        // Group 2: Amount (e.g., 50.00)
+        // Group 3: Date (e.g., 6/2/26)
+        // Group 4: Time (e.g., 7:17 AM)
+        // Group 5: Balance (e.g., 371.32)
+        // Group 6: Transaction Cost/Fee (e.g., 0.00)
         
-        if (!altMatch) {
-            document.getElementById('parsedResults').innerHTML = 
-                '<p style="color: red;">Could not parse transaction. Please check the format.</p>';
-            return;
+        const regex = /^([A-Z0-9]+)\s+Confirmed\.\s+Ksh([\d,.]+)\s+sent\s+to\s+.*?\s+on\s+(\d{1,2}\/\d{1,2}\/\d{2,4})\s+at\s+(\d{1,2}:\d{2}\s*[APM]+)\.\s+New\s+M-PESA\s+balance\s+is\s+Ksh([\d,.]+)\.\s+Transaction\s+cost,\s+Ksh([\d,.]+)/i;
+
+        const match = message.match(regex);
+
+        if (match) {
+            const [ , code, amount, date, time, balance, fee] = match;
+
+            // Clean numbers (remove commas)
+            const cleanAmount = parseFloat(amount.replace(/,/g, ''));
+            const cleanFee = parseFloat(fee.replace(/,/g, ''));
+            const cleanBalance = parseFloat(balance.replace(/,/g, ''));
+
+            // Display Results
+            resultsDiv.innerHTML = `
+                <div class="success-parse">
+                    <p><strong>Code:</strong> ${code}</p>
+                    <p><strong>Date/Time:</strong> ${date} at ${time}</p>
+                    <p><strong>Amount:</strong> Ksh ${cleanAmount.toFixed(2)}</p>
+                    <p><strong>Fee:</strong> Ksh ${cleanFee.toFixed(2)}</p>
+                    <p><strong>New Balance:</strong> Ksh ${cleanBalance.toFixed(2)}</p>
+                    <p><strong>Total Deducted:</strong> Ksh ${(cleanAmount + cleanFee).toFixed(2)}</p>
+                </div>
+            `;
+            
+            // Store globally for the "Add to List" button
+            window.lastParsedData = {
+                code, 
+                amount: cleanAmount, 
+                date, 
+                time, 
+                fee: cleanFee, 
+                balance: cleanBalance
+            };
+
+        } else {
+            resultsDiv.innerHTML = '<p style="color: red;">Could not parse transaction. Please check the format.</p>';
+            window.lastParsedData = null;
         }
-        
-        // Use alternate match
-        const [, date, time, code, amount, fee, balance] = altMatch;
-        displayParsedResults(date, time, code, amount, fee, balance);
-    } else {
-        // Use primary match
-        const [, date, time, code, amount, fee, balance] = match;
-        displayParsedResults(date, time, code, amount, fee, balance);
+    } catch (error) {
+        console.error("Parsing error:", error);
+        resultsDiv.innerHTML = '<p style="color: red;">An error occurred during parsing.</p>';
     }
+}
+
+// Updated "Add to List" function to use the parsed data
+function addTransactionToList() {
+    const category = document.getElementById('categorySelect').value;
+    
+    if (!window.lastParsedData) {
+        alert('Please parse a valid transaction first.');
+        return;
+    }
+    if (!category) {
+        alert('Please select a category.');
+        return;
+    }
+
+    const transaction = {
+        ...window.lastParsedData,
+        category: category,
+        totalAmount: window.lastParsedData.amount + window.lastParsedData.fee,
+        timestamp: new Date().getTime() // For sorting
+    };
+
+    // Save to LocalStorage
+    let transactions = JSON.parse(localStorage.getItem('budgetTrackerTransactions') || '[]');
+    transactions.push(transaction);
+    localStorage.setItem('budgetTrackerTransactions', JSON.stringify(transactions));
+
+    // Feedback and Clear
+    alert('Transaction saved successfully!');
+    document.getElementById('transactionInput').value = '';
+    document.getElementById('parsedResults').innerHTML = '';
+    document.getElementById('categorySelect').value = '';
 }
 
 // Display parsed results

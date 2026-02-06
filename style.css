@@ -242,6 +242,15 @@ td {
     border-radius: 4px;
     font-size: 0.85rem;
 }
+.category-badge {
+    background-color: #e0e7ff; /* Light indigo */
+    color: #4338ca; /* Dark indigo */
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    display: inline-block;
+}
 
 /* Responsive design */
 @media (max-width: 768px) {

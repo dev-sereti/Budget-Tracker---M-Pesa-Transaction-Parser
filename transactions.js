@@ -96,7 +96,7 @@ function downloadExcel() {
         "Transaction Fee (Ksh)": t.fee,
         "Category": t.category,
         "Total Amount (Ksh)": t.totalAmount || (t.amount + t.fee),
-        "Balance (Ksh)": t.balance || 0  // Add the balance column
+        "Balance (Ksh)": t.balance || 0
     }));
 
     // Generate Sheet

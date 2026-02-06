@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Budget Tracker - Transactions</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Load XLSX Library for Excel Export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
@@ -18,7 +17,7 @@
         <main>
             <section class="transactions-list">
                 <div class="list-header">
-                    <h2>Latest Transactions (10)</h2>
+                    <h2>Latest Transactions</h2>
                     <button id="downloadExcel" class="download-btn">Download Excel</button>
                 </div>
 
@@ -33,23 +32,22 @@
                 </div>
                 
                 <div class="table-responsive">
-                    <!-- Update the table header in transactions.html -->
-                <table id="transactionsTable">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Transaction Code</th>
-                            <th>Amount</th>
-                            <th>Fee</th>
-                            <th>Category</th>
-                            <th>Total Amount</th>
-                            <th>Balance</th>  <!-- Add this column -->
-                        </tr>
-                    </thead>
-                    <tbody id="transactionsBody">
-                        <!-- Transactions will be added here dynamically -->
-                    </tbody>
-                </table>
+                    <table id="transactionsTable">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Transaction Code</th>
+                                <th>Amount</th>
+                                <th>Fee</th>
+                                <th>Category</th>
+                                <th>Total Amount</th>
+                                <th>Balance</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactionsBody">
+                            <!-- Transactions will be added here dynamically -->
+                        </tbody>
+                    </table>
                 </div>
             </section>
         </main>

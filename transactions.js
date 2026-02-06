@@ -88,7 +88,7 @@ function downloadExcel() {
         "Transaction Fee (Ksh)": t.fee || 0,
         "Category": t.category,
         "Total Amount (Ksh)": t.totalAmount || (t.amount + t.fee),
-        "Balance (Ksh)": (t.balance !== undefined && t.balance !== null) ? t.balance : '' // Empty cell if no balance
+        "Balance (Ksh)": (t.balance !== undefined && t.balance !== null) ? t.balance : ''
     }));
 
     const ws = XLSX.utils.json_to_sheet(excelData);

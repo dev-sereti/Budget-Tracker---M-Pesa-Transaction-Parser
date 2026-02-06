@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget Tracker - Transactions</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Load XLSX Library for Excel Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Transaction History</h1>
+            <p>View and manage your recorded expenses</p>
+        </header>
+
+        <main>
+            <section class="transactions-list">
+                <div class="list-header">
+                    <h2>Latest Transactions (10)</h2>
+                    <button id="downloadExcel" class="download-btn">Download Excel</button>
+                </div>
+
+                <div class="filter-controls">
+                    <label for="filterSelect">Filter:</label>
+                    <select id="filterSelect">
+                        <option value="all">All</option>
+                        <option value="today">Today</option>
+                        <option value="thisWeek">This Week</option>
+                        <option value="thisMonth">This Month</option>
+                    </select>
+                </div>
+                
+                <div class="table-responsive">
+                    <table id="transactionsTable">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Transaction Code</th>
+                                <th>Amount</th>
+                                <th>Fee</th>
+                                <th>Category</th>
+                                <th>Total Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactionsBody">
+                            <!-- Transactions will be added here dynamically from script.js -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <nav>
+                <a href="index.html">Home</a>
+                <a href="transactions.html" class="active">Transactions</a>
+                <a href="dashboard.html">Dashboard</a>
+            </nav>
+        </footer>
+    </div>
+
+    <script src="transactions.js"></script>
+</body>
+</html>

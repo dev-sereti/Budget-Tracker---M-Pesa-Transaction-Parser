@@ -1,5 +1,5 @@
 // Global variable to hold the data after parsing
-let currentParsedData = null;
+let currentParsedData = null; 
 
 document.addEventListener('DOMContentLoaded', function() {
     // Set up event listeners
@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
 function parseTransaction() {
     const message = document.getElementById('transactionInput').value.trim();
     const resultsDiv = document.getElementById('parsedResults');
-
+    
     if (!message) {
         alert('Please enter a transaction message');
         return;
@@ -24,75 +24,68 @@ function parseTransaction() {
     if (match) {
         const [ , code, amount, date, time, balance, fee] = match;
 
-        // Clean numbers (remove commas) and convert to Float
+        // Clean numbers and convert to Float
         const cleanAmount = parseFloat(amount.replace(/,/g, ''));
         const cleanFee = parseFloat(fee.replace(/,/g, ''));
         const cleanBalance = parseFloat(balance.replace(/,/g, ''));
 
         // Store data globally
         currentParsedData = {
-            code: code,
-            date: date,
-            time: time,
+            code,
+            date,
+            time,
             amount: cleanAmount,
             fee: cleanFee,
-            balance: cleanBalance,  // Store the balance
-            rawDate: date,
-            rawTime: time
+            balance: cleanBalance // Stored as a number
         };
 
         // Display Results
         resultsDiv.innerHTML = `
             <div style="background: #e6fffa; padding: 15px; border-left: 4px solid #00b894; border-radius: 4px;">
                 <p><strong>Code:</strong> ${code}</p>
-                <p><strong>Date/Time:</strong> ${date} at ${time}</p>
+                <p><strong>Date:</strong> ${date} ${time}</p>
                 <p><strong>Amount:</strong> Ksh ${cleanAmount.toFixed(2)}</p>
                 <p><strong>Fee:</strong> Ksh ${cleanFee.toFixed(2)}</p>
                 <p><strong>Balance:</strong> Ksh ${cleanBalance.toFixed(2)}</p>
-                <p><strong>Total Deducted:</strong> Ksh ${(cleanAmount + cleanFee).toFixed(2)}</p>
             </div>
         `;
     } else {
-        // Reset global data if parse fails
         currentParsedData = null;
         resultsDiv.innerHTML = '<p style="color: #d63031;">Could not parse transaction. Please check the format.</p>';
     }
 }
 
 function addTransactionToList() {
-    // Check if we have parsed data
     if (!currentParsedData) {
-        alert('Please click "Parse Transaction" first to verify the details.');
+        alert('Please parse a valid transaction first.');
         return;
     }
-
-    // Check category
+    
     const category = document.getElementById('categorySelect').value;
     if (!category) {
-        alert('Please select a category from the dropdown.');
+        alert('Please select a category.');
         return;
     }
-
-    // Create final transaction object with balance
+    
+    // Create final transaction object
     const transaction = {
         date: `${currentParsedData.date} ${currentParsedData.time}`,
         code: currentParsedData.code,
         amount: currentParsedData.amount,
         fee: currentParsedData.fee,
-        balance: currentParsedData.balance,  // Include balance
+        balance: currentParsedData.balance, // This is now guaranteed to be a number
         category: category,
         totalAmount: currentParsedData.amount + currentParsedData.fee,
-        timestamp: new Date().getTime()
+        timestamp: Date.now()
     };
-
-    // Save to LocalStorage
+    
+    // Save to Local Storage
     let transactions = JSON.parse(localStorage.getItem('budgetTrackerTransactions') || '[]');
     transactions.push(transaction);
     localStorage.setItem('budgetTrackerTransactions', JSON.stringify(transactions));
-
-    // Success feedback
+    
     alert('Transaction added successfully!');
-
+    
     // Clear form
     document.getElementById('transactionInput').value = '';
     document.getElementById('categorySelect').value = '';

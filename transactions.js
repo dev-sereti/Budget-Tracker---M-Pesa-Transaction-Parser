@@ -5,7 +5,7 @@ let allTransactions = [];
 document.addEventListener('DOMContentLoaded', function() {
     // Fetch data from LocalStorage
     const storedData = localStorage.getItem('budgetTrackerTransactions');
-    
+
     if (storedData) {
         allTransactions = JSON.parse(storedData);
         // Sort by timestamp descending (newest first) if timestamp exists
@@ -33,7 +33,7 @@ function renderTable(data) {
     // Loop through data and create rows
     data.forEach(t => {
         const row = document.createElement('tr');
-        
+
         // Calculate total if not already there
         const total = (t.totalAmount !== undefined) ? t.totalAmount : (t.amount + t.fee);
 
@@ -53,53 +53,50 @@ function renderTable(data) {
 function filterTransactions() {
     const filterType = document.getElementById('filterSelect').value;
     const now = new Date();
-    
-    // We filter based on the transaction date (using the parsed date string)
-    // Note: Since M-Pesa dates formats vary, we will try to use the timestamp we saved.
-    // If timestamp is missing, we fall back to showing everything.
-    
+
     let filteredData = allTransactions.filter(t => {
         if (!t.timestamp) return true; // Keep if no timestamp (legacy data)
-        
+
         const tDate = new Date(t.timestamp);
-        
+
         if (filterType === 'all') return true;
-        
+
         if (filterType === 'today') {
             return tDate.toDateString() === now.toDateString();
         }
-        
+
         if (filterType === 'thisWeek') {
             const oneWeekAgo = new Date();
             oneWeekAgo.setDate(now.getDate() - 7);
             return tDate >= oneWeekAgo;
         }
-        
+
         if (filterType === 'thisMonth') {
             return tDate.getMonth() === now.getMonth() && tDate.getFullYear() === now.getFullYear();
         }
-        
+
         return true;
     });
 
     renderTable(filteredData);
 }
 
-// 5. Excel Download Function
+// 5. Excel Download Function (with Balance column)
 function downloadExcel() {
     if (allTransactions.length === 0) {
         alert("No transactions to download.");
         return;
     }
 
-    // Format data specifically for Excel columns
+    // Format data for Excel with Balance column
     const excelData = allTransactions.map(t => ({
         "Date": t.date,
-        "Code": t.code,
+        "Transaction Code": t.code,
         "Amount (Ksh)": t.amount,
-        "Fee (Ksh)": t.fee,
+        "Transaction Fee (Ksh)": t.fee,
         "Category": t.category,
-        "Total (Ksh)": t.totalAmount || (t.amount + t.fee)
+        "Total Amount (Ksh)": t.totalAmount || (t.amount + t.fee),
+        "Balance (Ksh)": t.balance || 0  // Add the balance column
     }));
 
     // Generate Sheet

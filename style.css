@@ -1,0 +1,226 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f5f5f5;
+    color: #333;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+header {
+    text-align: center;
+    padding: 2rem 0;
+    background: linear-gradient(135deg, #6e8efb, #a777e3);
+    color: white;
+    border-radius: 10px;
+    margin-bottom: 2rem;
+}
+
+header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+header p {
+    font-size: 1.2rem;
+    opacity: 0.9;
+}
+
+main {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.parser-section, .transactions-list {
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.parser-section h2, .transactions-list h2 {
+    margin-bottom: 1rem;
+    color: #444;
+    border-bottom: 2px solid #6e8efb;
+    padding-bottom: 0.5rem;
+}
+
+.input-container {
+    margin-bottom: 1.5rem;
+}
+
+textarea {
+    width: 100%;
+    height: 100px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-family: inherit;
+    resize: vertical;
+    margin-bottom: 10px;
+}
+
+.controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.controls button, .controls select {
+    padding: 8px 15px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.controls button {
+    background: #6e8efb;
+    color: white;
+    transition: background 0.3s;
+}
+
+.controls button:hover {
+    background: #5a7ce0;
+}
+
+.controls select {
+    padding: 8px;
+    border: 1px solid #ddd;
+    background: white;
+}
+
+.results-container {
+    margin-top: 1.5rem;
+}
+
+.parsed-results {
+    background: #f9f9f9;
+    padding: 1rem;
+    border-radius: 5px;
+    border-left: 4px solid #6e8efb;
+    min-height: 50px;
+}
+
+.parsed-results p {
+    margin: 5px 0;
+    font-family: monospace;
+}
+
+.transactions-list table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+.transactions-list th, .transactions-list td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.transactions-list th {
+    background-color: #f2f2f2;
+    font-weight: 600;
+}
+
+.filter-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.filter-controls label {
+    font-weight: 500;
+}
+
+.filter-controls select {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.filter-controls button {
+    padding: 8px 15px;
+    background: #6e8efb;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 0.3s;
+}
+
+.filter-controls button:hover {
+    background: #5a7ce0;
+}
+
+footer {
+    margin-top: 2rem;
+    padding: 1rem;
+    background: #333;
+    color: white;
+    border-radius: 10px;
+}
+
+footer nav {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+}
+
+footer nav a {
+    color: white;
+    text-decoration: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    transition: background 0.3s;
+}
+
+footer nav a:hover, footer nav a.active {
+    background: #6e8efb;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+    
+    header {
+        padding: 1.5rem 0;
+    }
+    
+    header h1 {
+        font-size: 2rem;
+    }
+    
+    .controls {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .filter-controls {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .filter-controls select, .filter-controls button {
+        width: 100%;
+    }
+}

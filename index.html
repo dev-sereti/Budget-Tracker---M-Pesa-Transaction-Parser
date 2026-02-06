@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget Tracker - M-Pesa Transaction Parser</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Budget Tracker</h1>
+            <p>Parse your M-Pesa transactions and track your spending</p>
+        </header>
+
+        <main>
+            <section class="parser-section">
+                <h2>Transaction Parser</h2>
+                <div class="input-container">
+                    <textarea id="transactionInput" placeholder="Paste your M-Pesa transaction message here..."></textarea>
+                    <div class="controls">
+                        <button id="parseButton">Parse Transaction</button>
+                        <select id="categorySelect">
+                            <option value="">Select Category</option>
+                            <option value="Saving">Saving</option>
+                            <option value="Food">Food</option>
+                            <option value="Family">Family</option>
+                            <option value="Transport">Transport</option>
+                            <option value="Shopping">Shopping</option>
+                            <option value="Entertainment">Entertainment</option>
+                            <option value="Mobile">Mobile</option>
+                            <option value="Housing">Housing</option>
+                            <option value="Authenticity">Authenticity</option>
+                            <option value="Others">Others</option>
+                            <option value="Clothing">Clothing</option>
+                        </select>
+                        <button id="addTransaction">Add to List</button>
+                    </div>
+                </div>
+
+                <div class="results-container">
+                    <h3>Parsed Results</h3>
+                    <div id="parsedResults" class="parsed-results">
+                        <!-- Parsed results will appear here -->
+                    </div>
+                </div>
+            </section>
+
+            <section class="transactions-list">
+                <h2>Latest Transactions (10)</h2>
+                <div class="filter-controls">
+                    <label for="filterSelect">Filter:</label>
+                    <select id="filterSelect">
+                        <option value="all">All</option>
+                        <option value="today">Today</option>
+                        <option value="thisWeek">This Week</option>
+                        <option value="thisMonth">This Month</option>
+                    </select>
+                    <button id="downloadExcel">Download Excel</button>
+                </div>
+                
+                <table id="transactionsTable">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Transaction Code</th>
+                            <th>Amount</th>
+                            <th>Fee</th>
+                            <th>Category</th>
+                            <th>Total Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transactionsBody">
+                        <!-- Transactions will be added here dynamically -->
+                    </tbody>
+                </table>
+            </section>
+        </main>
+
+        <footer>
+            <nav>
+                <a href="index.html" class="active">Home</a>
+                <a href="dashboard.html">Transactions</a>
+                <a href="dashboard.html">Dashboard</a>
+            </nav>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

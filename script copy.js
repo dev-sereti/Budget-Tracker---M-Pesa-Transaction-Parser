@@ -1,5 +1,5 @@
 // Global variable to hold the data after parsing
-let currentParsedData = null;
+let currentParsedData = null; 
 
 document.addEventListener('DOMContentLoaded', function() {
     // Set up event listeners
@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
 function parseTransaction() {
     const message = document.getElementById('transactionInput').value.trim();
     const resultsDiv = document.getElementById('parsedResults');
-
+    
     if (!message) {
         alert('Please enter a transaction message');
         return;
@@ -29,27 +29,25 @@ function parseTransaction() {
         const cleanFee = parseFloat(fee.replace(/,/g, ''));
         const cleanBalance = parseFloat(balance.replace(/,/g, ''));
 
-        // Store data globally
+        // 1. STORE DATA GLOBALLY (This fixes your error)
         currentParsedData = {
             code: code,
-            date: date,
-            time: time,
+            date: date + ' ' + time, // Combine date and time
             amount: cleanAmount,
             fee: cleanFee,
-            balance: cleanBalance,  // Store the balance
-            rawDate: date,
+            balance: cleanBalance,
+            rawDate: date, // Keep original if needed
             rawTime: time
         };
 
-        // Display Results
+        // 2. Display Results
         resultsDiv.innerHTML = `
             <div style="background: #e6fffa; padding: 15px; border-left: 4px solid #00b894; border-radius: 4px;">
                 <p><strong>Code:</strong> ${code}</p>
-                <p><strong>Date/Time:</strong> ${date} at ${time}</p>
+                <p><strong>Date:</strong> ${date} ${time}</p>
                 <p><strong>Amount:</strong> Ksh ${cleanAmount.toFixed(2)}</p>
                 <p><strong>Fee:</strong> Ksh ${cleanFee.toFixed(2)}</p>
                 <p><strong>Balance:</strong> Ksh ${cleanBalance.toFixed(2)}</p>
-                <p><strong>Total Deducted:</strong> Ksh ${(cleanAmount + cleanFee).toFixed(2)}</p>
             </div>
         `;
     } else {
@@ -60,42 +58,41 @@ function parseTransaction() {
 }
 
 function addTransactionToList() {
-    // Check if we have parsed data
+    // 1. CHECK IF WE HAVE PARSED DATA
     if (!currentParsedData) {
         alert('Please click "Parse Transaction" first to verify the details.');
         return;
     }
-
-    // Check category
+    
+    // 2. CHECK CATEGORY
     const category = document.getElementById('categorySelect').value;
     if (!category) {
         alert('Please select a category from the dropdown.');
         return;
     }
-
-    // Create final transaction object with balance
+    
+    // 3. CREATE FINAL TRANSACTION OBJECT
     const transaction = {
-        date: `${currentParsedData.date} ${currentParsedData.time}`,
+        date: currentParsedData.date,
         code: currentParsedData.code,
         amount: currentParsedData.amount,
         fee: currentParsedData.fee,
-        balance: currentParsedData.balance,  // Include balance
         category: category,
         totalAmount: currentParsedData.amount + currentParsedData.fee,
-        timestamp: new Date().getTime()
+        timestamp: new Date().getTime() // Used for sorting
     };
-
-    // Save to LocalStorage
+    
+    // 4. SAVE TO LOCAL STORAGE
     let transactions = JSON.parse(localStorage.getItem('budgetTrackerTransactions') || '[]');
     transactions.push(transaction);
     localStorage.setItem('budgetTrackerTransactions', JSON.stringify(transactions));
-
-    // Success feedback
+    
+    // 5. SUCCESS FEEDBACK
     alert('Transaction added successfully!');
-
-    // Clear form
+    
+    // 6. CLEAR FORM
     document.getElementById('transactionInput').value = '';
     document.getElementById('categorySelect').value = '';
     document.getElementById('parsedResults').innerHTML = '';
-    currentParsedData = null;
+    currentParsedData = null; // Reset the global variable
 }

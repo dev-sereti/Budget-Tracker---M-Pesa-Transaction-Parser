@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget Tracker - Dashboard</title>
+    <link rel="stylesheet" href="dashboard.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Budget Tracker Dashboard</h1>
+            <p>Track your monthly expenditure and financial health</p>
+        </header>
+
+        <main>
+            <section class="income-section">
+                <h2>Monthly Income</h2>
+                <div class="income-input">
+                    <label for="monthlyIncome">Enter your monthly income:</label>
+                    <input type="number" id="monthlyIncome" placeholder="e.g., 50000" min="0">
+                    <button id="setIncome">Set Income</button>
+                </div>
+            </section>
+
+            <section class="kpi-section">
+                <h2>Financial Overview</h2>
+                <div class="kpi-cards">
+                    <div class="kpi-card">
+                        <h3>Total Spent</h3>
+                        <div id="totalSpent" class="kpi-value">Ksh 0.00</div>
+                    </div>
+                    <div class="kpi-card">
+                        <h3>Remaining Balance</h3>
+                        <div id="remainingBalance" class="kpi-value">Ksh 0.00</div>
+                    </div>
+                    <div class="kpi-card">
+                        <h3>Savings Rate</h3>
+                        <div id="savingsRate" class="kpi-value">0%</div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="top-categories">
+                <h2>Top Spending Categories</h2>
+                <div id="topCategoriesList" class="categories-list">
+                    <!-- Top categories will be displayed here -->
+                </div>
+            </section>
+
+            <section class="visualizations">
+                <h2>Financial Visualizations</h2>
+                <div class="charts-container">
+                    <div class="chart-wrapper">
+                        <h3>Spending by Category (Pie Chart)</h3>
+                        <canvas id="pieChart"></canvas>
+                    </div>
+                    <div class="chart-wrapper">
+                        <h3>Spending Trends (Bar Chart)</h3>
+                        <canvas id="barChart"></canvas>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <nav>
+                <a href="index.html">Home</a>
+                <a href="index.html">Transactions</a>
+                <a href="dashboard.html" class="active">Dashboard</a>
+            </nav>
+        </footer>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>

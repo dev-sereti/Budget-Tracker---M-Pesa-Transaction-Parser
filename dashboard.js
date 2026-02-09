@@ -174,10 +174,6 @@ function normalizeTransactions(list) {
 
   return { list, changed };
 }
-
-/* ---------------------------
-   App init
----------------------------- */
 document.addEventListener('DOMContentLoaded', function () {
   loadData();
 

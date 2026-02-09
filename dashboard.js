@@ -41,6 +41,42 @@ function getColorForCategory(category) {
   return color;
 }
 
+/* =========
+   Helpers
+========= */
+
+function formatCurrency(amount) {
+  const n = Number(amount || 0);
+  return `Ksh ${n.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  })}`;
+}
+
+// Short format for chart labels: 1.2K, 3.4M, 5.6B
+function formatShortAmount(amount, includeCurrency = false) {
+  const n = Number(amount || 0);
+  const abs = Math.abs(n);
+  let value = n;
+  let suffix = "";
+
+  if (abs >= 1e9) {
+    value = n / 1e9;
+    suffix = "B";
+  } else if (abs >= 1e6) {
+    value = n / 1e6;
+    suffix = "M";
+  } else if (abs >= 1e3) {
+    value = n / 1e3;
+    suffix = "K";
+  }
+
+  let str = value.toFixed(1);
+  if (str.endsWith(".0")) str = str.slice(0, -2);
+
+  return (includeCurrency ? "Ksh " : "") + str + suffix;
+}
+
 /* ===
    Date helpers (filter ranges)
  */
@@ -83,10 +119,9 @@ function getPresetRange(period) {
   }
 
   if (period === "lastWeek") {
-    // previous calendar week (Mon–Sun)
     const thisWeekStart = startOfThisWeek(now);
     const lastWeekStart = thisWeekStart - 7 * 24 * 60 * 60 * 1000;
-    const lastWeekEnd = thisWeekStart - 1; // end of Sunday
+    const lastWeekEnd = thisWeekStart - 1;
     return { startMs: lastWeekStart, endMs: lastWeekEnd, label: "Last Week" };
   }
 
@@ -130,14 +165,12 @@ function parseDmyTimeToMs(dateTimeStr) {
 function ensureTxDateMs(tx) {
   if (Number.isFinite(tx.txDateMs)) return tx.txDateMs;
 
-  // Try parse from tx.date
   const parsed = parseDmyTimeToMs(tx.date);
   if (Number.isFinite(parsed)) {
     tx.txDateMs = parsed;
     return parsed;
   }
 
-  // Fallback to other known fields
   if (Number.isFinite(tx.timestamp)) {
     tx.txDateMs = tx.timestamp;
     return tx.timestamp;
@@ -147,7 +180,6 @@ function ensureTxDateMs(tx) {
     return tx.ts;
   }
 
-  // Last resort
   tx.txDateMs = Date.now();
   return tx.txDateMs;
 }
@@ -160,11 +192,9 @@ function normalizeTransactions(list) {
     const ms = ensureTxDateMs(tx);
     if (before !== ms) changed = true;
 
-    // Normalize numbers
     tx.amount = Number(tx.amount || 0);
     tx.fee = Number(tx.fee || 0);
 
-    // Prefer totalAmount, else compute it
     if (!Number.isFinite(Number(tx.totalAmount))) {
       tx.totalAmount = Number(tx.totalAmount ?? (tx.amount + tx.fee));
       changed = true;
@@ -188,18 +218,19 @@ function normalizeTransactions(list) {
   return { list, changed };
 }
 
+/* ============
+   Init
+============ */
+
 document.addEventListener('DOMContentLoaded', function () {
-  loadData();          // loads budget + transactions
-  initBudgetSection(); // wires Set button + renders budget KPI if exists
+  loadData();
+  initBudgetSection();
   initCharts();
   setupPeriodFilter();
-
-  // Default: This Month
   applyPresetFilter("thisMonth");
 });
 
 function loadData() {
-  // Load budget from new key, fall back to old key for compatibility
   const storedBudget = localStorage.getItem(DASHBOARD_BUDGET_KEY);
   const legacyBudget = localStorage.getItem('monthlyIncome');
   let budgetVal = 0;
@@ -215,7 +246,6 @@ function loadData() {
   monthlyIncome = budgetVal;
   currentMonthlyBudget = budgetVal > 0 ? budgetVal : null;
 
-  // Load transactions
   const saved = localStorage.getItem('budgetTrackerTransactions');
   allTransactions = saved ? JSON.parse(saved) : [];
 
@@ -226,8 +256,10 @@ function loadData() {
     localStorage.setItem('budgetTrackerTransactions', JSON.stringify(allTransactions));
   }
 }
-  //  Period Filter
 
+/* ============
+   Period Filter
+============ */
 
 function setupPeriodFilter() {
   const btnWrap = document.getElementById("dashPeriodButtons");
@@ -236,10 +268,8 @@ function setupPeriodFilter() {
 
   if (!btnWrap) return;
 
-  // Click via event delegation
   btnWrap.addEventListener("click", (e) => {
     e.preventDefault();
-
     const btn = e.target.closest(".chip");
     if (!btn) return;
 
@@ -250,8 +280,6 @@ function setupPeriodFilter() {
       if (customBox) customBox.classList.add("show");
       const lbl = document.getElementById("dashRangeLabel");
       if (lbl) lbl.textContent = "Select Date From and Date To, then click Apply.";
-
-      // Don't filter until Apply is clicked
       filteredTransactions = [];
       updateFromFiltered();
       return;
@@ -322,20 +350,21 @@ function applyCustomFilter() {
 
   updateFromFiltered();
 }
-  //  Monthly Budget UI (Financial Overview)
+
+/* ============
+   Monthly Budget UI (Financial Overview)
+============ */
 
 function initBudgetSection() {
   const input = document.getElementById('monthlyIncome');
   const setBtn = document.getElementById('setIncome');
   if (!input || !setBtn) return;
 
-  // If a budget already exists (loaded from storage), render its KPI card
   if (monthlyIncome > 0) {
     currentMonthlyBudget = monthlyIncome;
     renderBudgetKpi("view");
   }
 
-  // When user clicks "Set" under Monthly Budget
   setBtn.addEventListener("click", (e) => {
     e.preventDefault();
 
@@ -347,24 +376,17 @@ function initBudgetSection() {
       return;
     }
 
-    // Update globals + storage
     monthlyIncome = value;
     currentMonthlyBudget = value;
     localStorage.setItem(DASHBOARD_BUDGET_KEY, String(value));
-    localStorage.setItem('monthlyIncome', String(value)); // for other pages if needed
+    localStorage.setItem('monthlyIncome', String(value));
 
-    // Clear input as requested
     input.value = "";
-
-    // Show / update the KPI card in Financial Overview
     renderBudgetKpi("view");
-
-    // Recompute KPIs based on current filtered data
     updateFromFiltered();
   });
 }
 
-// Renders the budget KPI card in "view" or "edit" mode
 function renderBudgetKpi(mode = "view") {
   const card = document.getElementById("budgetKpiCard");
   if (!card) return;
@@ -438,7 +460,10 @@ function renderBudgetKpi(mode = "view") {
     }
   }
 }
-  //  Totals + Charts
+
+/* ============
+   Totals + Charts
+============ */
 
 function calculateCategoryTotals(list) {
   categoryTotals = {};
@@ -462,23 +487,110 @@ function getTopCategoriesWithOthers(totals, topN = 5) {
   return top;
 }
 
-function formatCurrency(amount) {
-  const n = Number(amount || 0);
-  return `Ksh ${n.toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  })}`;
-}
+/* ---- Custom plugins ---- */
+
+// Doughnut: leader lines + PERCENTAGE labels
+const doughnutLabelPlugin = {
+  id: 'doughnutLabelPlugin',
+  afterDraw(chart) {
+    const meta = chart.getDatasetMeta(0);
+    if (!meta || !meta.data || !meta.data.length) return;
+
+    const data = chart.data.datasets[0].data || [];
+    const total = data.reduce((sum, v) => sum + Number(v || 0), 0);
+    if (!total) return;
+
+    const ctx = chart.ctx;
+    ctx.save();
+    ctx.font = '10px system-ui, -apple-system, BlinkMacSystemFont,"Segoe UI",sans-serif';
+    ctx.fillStyle = '#111827';
+    ctx.strokeStyle = '#111827';
+    ctx.lineWidth = 1;
+
+    meta.data.forEach((arc, index) => {
+      const value = Number(data[index] || 0);
+      if (!value) return;
+
+      const pct = (value / total) * 100;
+      const label = `${pct.toFixed(1)}%`;
+
+      // Use tooltipPosition for robust coordinates
+      const pos = arc.tooltipPosition();
+      const cx = pos.x;
+      const cy = pos.y;
+
+      const outerRadius = arc.outerRadius || arc.outerRadius === 0
+        ? arc.outerRadius
+        : chart._metasets?.[0]?.data?.[index]?.outerRadius || 0;
+
+      const startAngle = arc.startAngle ?? 0;
+      const endAngle = arc.endAngle ?? 0;
+      const angle = (startAngle + endAngle) / 2;
+
+      const r = outerRadius || (chart.width / 4);
+      const xFrom = cx + Math.cos(angle) * r;
+      const yFrom = cy + Math.sin(angle) * r;
+
+      const radialOffset = 18;
+      const xMid = cx + Math.cos(angle) * (r + radialOffset);
+      const yMid = cy + Math.sin(angle) * (r + radialOffset);
+
+      const isRight = xMid >= cx;
+      const horiz = 20;
+      const xEnd = xMid + (isRight ? horiz : -horiz);
+      const yEnd = yMid;
+
+      ctx.beginPath();
+      ctx.moveTo(xFrom, yFrom);
+      ctx.lineTo(xMid, yMid);
+      ctx.lineTo(xEnd, yEnd);
+      ctx.stroke();
+
+      ctx.textBaseline = 'middle';
+      ctx.textAlign = isRight ? 'left' : 'right';
+      ctx.fillText(label, xEnd, yEnd);
+    });
+
+    ctx.restore();
+  }
+};
+
+// Bar: amount labels on top of each bar
+const barValueLabelPlugin = {
+  id: 'barValueLabelPlugin',
+  afterDatasetsDraw(chart) {
+    const meta = chart.getDatasetMeta(0);
+    if (!meta || !meta.data || !meta.data.length) return;
+
+    const ctx = chart.ctx;
+    ctx.save();
+    ctx.font = '10px system-ui, -apple-system, BlinkMacSystemFont,"Segoe UI",sans-serif';
+    ctx.fillStyle = '#111827';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+
+    meta.data.forEach((bar, index) => {
+      const value = chart.data.datasets[0].data[index];
+      if (!value) return;
+
+      const label = formatShortAmount(value, false);
+      const pos = bar.tooltipPosition();
+      const x = pos.x;
+      const y = pos.y - 4; // little gap above bar
+      ctx.fillText(label, x, y);
+    });
+
+    ctx.restore();
+  }
+};
 
 function initCharts() {
   const donutCanvas = document.getElementById('doughnutChart');
   const barCanvas = document.getElementById('barChart');
   if (!donutCanvas || !barCanvas) return;
 
-  // Register data labels plugin if it exists (chartjs-plugin-datalabels)
-  if (window.ChartDataLabels) {
-    Chart.register(ChartDataLabels);
-  }
+  // Register custom plugins
+  Chart.register(doughnutLabelPlugin, barValueLabelPlugin);
 
   const donutCtx = donutCanvas.getContext('2d');
   doughnutChart = new Chart(donutCtx, {
@@ -498,27 +610,7 @@ function initCharts() {
       cutout: '70%',
       plugins: {
         legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: (context) =>
-              `${context.label || ''}: ${formatCurrency(context.raw || 0)}`
-          }
-        },
-        // Show data labels on each doughnut slice
-        datalabels: {
-          color: '#111827',
-          font: {
-            weight: '600',
-            size: 10
-          },
-          formatter: (value) => {
-            if (!value) return '';
-            const n = Number(value || 0);
-            return `Ksh ${n.toLocaleString(undefined, {
-              maximumFractionDigits: 0
-            })}`;
-          }
-        }
+        tooltip: { enabled: false }  // percentages always visible
       }
     }
   });
@@ -540,23 +632,7 @@ function initCharts() {
       maintainAspectRatio: false,
       plugins: {
         legend: { display: false },
-        // Show data labels on top of each bar
-        datalabels: {
-          anchor: 'end',
-          align: 'end',
-          color: '#111827',
-          font: {
-            weight: '600',
-            size: 10
-          },
-          formatter: (value) => {
-            if (!value) return '';
-            const n = Number(value || 0);
-            return `Ksh ${n.toLocaleString(undefined, {
-              maximumFractionDigits: 0
-            })}`;
-          }
-        }
+        tooltip: { enabled: false }  // values already drawn on bars
       },
       scales: {
         y: { beginAtZero: true },
@@ -567,12 +643,10 @@ function initCharts() {
 }
 
 function updateFromFiltered() {
-  // If nothing filtered yet, default to all for first render
   const list = filteredTransactions.length ? filteredTransactions : allTransactions;
 
   calculateCategoryTotals(list);
 
-  // KPIs based on list
   const totalSpent = list.reduce((sum, t) => sum + Number(t.totalAmount || 0), 0);
   const remainingBalance = monthlyIncome - totalSpent;
   const savingsRate = monthlyIncome > 0
@@ -589,11 +663,9 @@ function updateFromFiltered() {
   if (savingsRateEl) savingsRateEl.textContent = `${savingsRate.toFixed(1)}%`;
   if (donutCenterEl) donutCenterEl.textContent = formatCurrency(totalSpent);
 
-  // Top N + Others
   const topData = getTopCategoriesWithOthers(categoryTotals, TOP_N_CATEGORIES);
   const colors = topData.map(item => getColorForCategory(item.category));
 
-  // Update Donut
   if (doughnutChart) {
     doughnutChart.data.labels = topData.map(item => item.category);
     doughnutChart.data.datasets[0].data = topData.map(item => item.amount);
@@ -601,7 +673,6 @@ function updateFromFiltered() {
     doughnutChart.update();
   }
 
-  // Update Bar (same colors as donut)
   if (barChart) {
     barChart.data.labels = topData.map(item => item.category);
     barChart.data.datasets[0].data = topData.map(item => item.amount);
@@ -609,7 +680,6 @@ function updateFromFiltered() {
     barChart.update();
   }
 
-  // Update HTML legends
   const legendHTML = topData.map((item, idx) => `
     <div class="legend-item">
       <div class="legend-color" style="background-color:${colors[idx]}"></div>

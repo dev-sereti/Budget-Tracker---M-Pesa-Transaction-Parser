@@ -55,6 +55,42 @@ function parseTransaction() {
     }
 }
 
+/**
+ * Convert transaction date string to timestamp
+ * Format: "6/2/26 7:17 AM" -> milliseconds since epoch
+ */
+function parseTransactionDateTime(dateStr, timeStr) {
+    // Combine date and time
+    const fullDateStr = `${dateStr} ${timeStr}`;
+    
+    // Parse "6/2/26 7:17 AM"
+    const m = fullDateStr.match(
+        /^(\d{1,2})\/(\d{1,2})\/(\d{2,4})\s+(\d{1,2}):(\d{2})\s*([AP]M)$/i
+    );
+    
+    if (m) {
+        const dd = Number(m[1]);
+        const mm = Number(m[2]) - 1; // Month is 0-indexed
+        let yy = Number(m[3]);
+        
+        // Convert 2-digit year to 4-digit (assumes 2000s)
+        if (yy < 100) yy += 2000;
+
+        let hh = Number(m[4]);
+        const min = Number(m[5]);
+        const ap = m[6].toUpperCase();
+        
+        // Convert 12-hour to 24-hour format
+        if (ap === "PM" && hh !== 12) hh += 12;
+        if (ap === "AM" && hh === 12) hh = 0;
+
+        return new Date(yy, mm, dd, hh, min, 0, 0).getTime();
+    }
+
+    // Fallback to current time if parsing fails
+    return Date.now();
+}
+
 function addTransactionToList() {
     if (!currentParsedData) {
         alert('Please parse a valid transaction first.');
@@ -67,6 +103,9 @@ function addTransactionToList() {
         return;
     }
     
+    // Parse the transaction date and time to get the actual timestamp
+    const txDateMs = parseTransactionDateTime(currentParsedData.date, currentParsedData.time);
+    
     // Create final transaction object
     const transaction = {
         date: `${currentParsedData.date} ${currentParsedData.time}`,
@@ -76,7 +115,8 @@ function addTransactionToList() {
         balance: currentParsedData.balance, // This is now guaranteed to be a number
         category: category,
         totalAmount: currentParsedData.amount + currentParsedData.fee,
-        timestamp: Date.now()
+        txDateMs: txDateMs, // Use transaction date, NOT input date
+        timestamp: Date.now() // Keep this for "when was it added to the system"
     };
     
     // Save to Local Storage

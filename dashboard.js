@@ -27,7 +27,7 @@ const CATEGORY_COLORS = [
   '#14B8A6'  // Teal
 ];
 
-// Stable mapping: category -> color (keeps colors consistent across different filters)
+// Stable mapping: category
 const categoryColorMap = new Map();
 function getColorForCategory(category) {
   if (categoryColorMap.has(category)) return categoryColorMap.get(category);
@@ -37,9 +37,7 @@ function getColorForCategory(category) {
   return color;
 }
 
-/* ---------------------------
-   Date helpers (filter ranges)
----------------------------- */
+  //  Date helpers (filter ranges)
 function startOfDay(ms) {
   const d = new Date(ms);
   d.setHours(0, 0, 0, 0);
@@ -402,7 +400,7 @@ function initCharts() {
       plugins: { legend: { display: false } },
       scales: {
         y: { beginAtZero: true },
-        x: { display: false } // ✅ remove bottom axis labels (legend shows categories)
+        x: { display: false }
       }
     }
   });

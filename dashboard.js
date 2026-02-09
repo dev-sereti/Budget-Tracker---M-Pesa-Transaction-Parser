@@ -562,7 +562,7 @@ function updateFromFiltered() {
     doughnutChart.update();
   }
 
-  // Update Bar (same colors as donut)
+  // Update Bar colors
   if (barChart) {
     barChart.data.labels = topData.map(item => item.category);
     barChart.data.datasets[0].data = topData.map(item => item.amount);

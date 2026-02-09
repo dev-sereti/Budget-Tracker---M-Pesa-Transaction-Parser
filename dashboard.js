@@ -5,8 +5,20 @@ let categoryTotals = {};
 // Global Chart instances
 let doughnutChart, barChart;
 
-// Config: show only top 5 categories + Others
+// Config
 const TOP_N_CATEGORIES = 5;
+
+// Consistent Color Palette (Add more if you expect more categories)
+const CATEGORY_COLORS = [
+    '#4F46E5', // Indigo
+    '#06B6D4', // Cyan
+    '#F59E0B', // Amber
+    '#22C55E', // Green
+    '#EF4444', // Red
+    '#A855F7', // Purple
+    '#EC4899', // Pink
+    '#14B8A6'  // Teal
+];
 
 document.addEventListener('DOMContentLoaded', function() {
     loadData();
@@ -16,13 +28,11 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function loadData() {
-    // Load income
     monthlyIncome = parseFloat(localStorage.getItem('monthlyIncome') || '0');
     if (monthlyIncome > 0) {
         document.getElementById('monthlyIncome').value = monthlyIncome;
     }
 
-    // Load transactions
     const saved = localStorage.getItem('budgetTrackerTransactions');
     transactions = saved ? JSON.parse(saved) : [];
 
@@ -81,19 +91,25 @@ function initCharts() {
             labels: [],
             datasets: [{
                 data: [],
-                backgroundColor: [
-                    '#4F46E5', '#06B6D4', '#F59E0B', '#22C55E', '#EF4444', '#A855F7'
-                ],
+                backgroundColor: [], // Will be filled dynamically
                 borderWidth: 0,
                 hoverOffset: 4
             }]
         },
         options: {
-            responsive: false,           // Fixed size
-            maintainAspectRatio: false,  // Ignore aspect ratio
-            cutout: '70%',               // Thin ring (donut style)
+            responsive: false,
+            maintainAspectRatio: false,
+            cutout: '70%',
             plugins: {
-                legend: { display: false }, // Hide legend for compact look
+                legend: {
+                    display: true,        // SHOW LEGEND
+                    position: 'bottom',
+                    labels: {
+                        boxWidth: 12,
+                        padding: 15,
+                        font: { size: 11 }
+                    }
+                },
                 tooltip: {
                     callbacks: {
                         label: (context) => {
@@ -107,22 +123,25 @@ function initCharts() {
         }
     });
 
-    // Bar Chart
+    // BAR CHART
     const barCtx = document.getElementById('barChart').getContext('2d');
     barChart = new Chart(barCtx, {
         type: 'bar',
         data: {
             labels: [],
             datasets: [{
+                label: 'Spending', // Dataset label (for tooltip)
                 data: [],
-                backgroundColor: '#4F46E5',
+                backgroundColor: [], // Will be filled dynamically
                 borderRadius: 6
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
+            plugins: {
+                legend: { display: false } // We use a custom HTML legend
+            },
             scales: {
                 y: { beginAtZero: true },
                 x: { ticks: { maxRotation: 45, minRotation: 45 } }
@@ -148,19 +167,32 @@ function updateDashboard() {
     // Get Top N + Others
     const topData = getTopCategoriesWithOthers(categoryTotals, TOP_N_CATEGORIES);
 
+    // Generate colors array matching the data
+    const colors = topData.map((_, index) => CATEGORY_COLORS[index % CATEGORY_COLORS.length]);
+
     // Update Doughnut Chart
     doughnutChart.data.labels = topData.map(item => item.category);
     doughnutChart.data.datasets[0].data = topData.map(item => item.amount);
+    doughnutChart.data.datasets[0].backgroundColor = colors;
     doughnutChart.update();
 
     // Update Bar Chart
     barChart.data.labels = topData.map(item => item.category);
     barChart.data.datasets[0].data = topData.map(item => item.amount);
+    barChart.data.datasets[0].backgroundColor = colors; // Same colors as donut
     barChart.update();
 
-    // Update note under donut
-    const noteText = topData.length > 0 
-        ? `Showing top ${Math.min(TOP_N_CATEGORIES, Object.keys(categoryTotals).length)} categories` 
-        : "No spending data yet.";
-    document.getElementById('donutLegendNote').textContent = noteText;
+    // Update Custom Legend for Bar Chart
+    const legendContainer = document.getElementById('barChartLegend');
+    legendContainer.innerHTML = '';
+    topData.forEach((item, index) => {
+        const color = colors[index];
+        const legendItem = document.createElement('div');
+        legendItem.className = 'legend-item';
+        legendItem.innerHTML = `
+            <div class="legend-color" style="background-color: ${color}"></div>
+            <span>${item.category}</span>
+        `;
+        legendContainer.appendChild(legendItem);
+    });
 }

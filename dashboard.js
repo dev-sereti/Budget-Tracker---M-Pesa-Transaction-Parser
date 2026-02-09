@@ -43,7 +43,7 @@ function getColorForCategory(category) {
 
 /* ===
    Date helpers (filter ranges)
-=== */
+ */
 
 function startOfDay(ms) {
   const d = new Date(ms);
@@ -100,9 +100,7 @@ function getPresetRange(period) {
   };
 }
 
-/* ===
-   Transaction date normalization
-=== */
+/* Transaction date normalization */
 
 function parseDmyTimeToMs(dateTimeStr) {
   if (!dateTimeStr || typeof dateTimeStr !== "string") return null;

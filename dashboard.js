@@ -40,10 +40,7 @@ function getColorForCategory(category) {
   categoryColorMap.set(category, color);
   return color;
 }
-
-/* =========
-   Helpers
-========= */
+  //  Helpers
 
 function formatCurrency(amount) {
   const n = Number(amount || 0);

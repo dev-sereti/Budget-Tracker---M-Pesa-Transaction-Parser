@@ -322,9 +322,7 @@ function setMonthlyIncome() {
   updateFromFiltered();
 }
 
-/* ---------------------------
-   Totals + Charts
----------------------------- */
+  //  Totals + Charts
 function calculateCategoryTotals(list) {
   categoryTotals = {};
   list.forEach(transaction => {

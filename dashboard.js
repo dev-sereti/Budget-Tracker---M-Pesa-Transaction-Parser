@@ -254,9 +254,7 @@ function loadData() {
   }
 }
 
-/* ============
-   Period Filter
-============ */
+  //  Period Filter
 
 function setupPeriodFilter() {
   const btnWrap = document.getElementById("dashPeriodButtons");
@@ -350,9 +348,7 @@ function applyCustomFilter() {
   updateFromFiltered();
 }
 
-/* ============
-   Monthly Budget UI (Financial Overview)
-============ */
+  //  Monthly Budget UI (Financial Overview)
 
 function initBudgetSection() {
   const input = document.getElementById('monthlyIncome');
@@ -460,9 +456,8 @@ function renderBudgetKpi(mode = "view") {
   }
 }
 
-/* ============
-   Totals + Charts
-============ */
+
+  //  Totals + Charts
 
 function calculateCategoryTotals(list) {
   categoryTotals = {};

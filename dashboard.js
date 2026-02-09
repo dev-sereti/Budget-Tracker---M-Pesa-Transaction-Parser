@@ -475,23 +475,19 @@ function calculateCategoryTotals(list) {
     categoryTotals[category] = (categoryTotals[category] || 0) + amount;
   });
 }
+
+// Just top N (no extra Others bucket – avoids duplicate "Others")
 function getTopCategoriesWithOthers(totals, topN = 5) {
-  const entries = Object.entries(totals)
+  return Object.entries(totals)
     .map(([category, amount]) => ({ category, amount }))
     .filter(item => item.amount > 0)
-    .sort((a, b) => b.amount - a.amount);
-
-  if (entries.length <= topN) return entries;
-
-  const top = entries.slice(0, topN);
-  const rest = entries.slice(topN);
-  const othersSum = rest.reduce((sum, item) => sum + item.amount, 0);
-  return top;
+    .sort((a, b) => b.amount - a.amount)
+    .slice(0, topN);
 }
 
 /* ---- Custom plugins ---- */
 
-// Doughnut: leader lines + percentage labels (only for doughnut/pie)
+// Doughnut: percentage labels INSIDE each slice
 const doughnutLabelPlugin = {
   id: 'doughnutLabelPlugin',
   afterDraw(chart) {
@@ -506,57 +502,37 @@ const doughnutLabelPlugin = {
 
     const ctx = chart.ctx;
     ctx.save();
-    ctx.font = '11px system-ui, -apple-system, BlinkMacSystemFont,"Segoe UI",sans-serif';
-    ctx.fillStyle = '#111827';
-    ctx.strokeStyle = '#111827';
-    ctx.lineWidth = 1;
-
-    const width = chart.width;
+    ctx.font = 'bold 12px system-ui, -apple-system, BlinkMacSystemFont,"Segoe UI",sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
 
     meta.data.forEach((arc, index) => {
       const value = Number(data[index] || 0);
       if (!value) return;
 
       const pct = (value / total) * 100;
+      // Skip very small slices (< 5%)
+      if (pct < 5) return;
+
       const label = `${pct.toFixed(0)}%`;
 
-      const { x: cx, y: cy, outerRadius, startAngle, endAngle } = arc;
+      // Position in the middle of the slice
+      const { x: cx, y: cy, innerRadius, outerRadius, startAngle, endAngle } = arc;
       const angle = (startAngle + endAngle) / 2;
+      const midRadius = innerRadius + (outerRadius - innerRadius) * 0.5;
+      const x = cx + Math.cos(angle) * midRadius;
+      const y = cy + Math.sin(angle) * midRadius;
 
-      const r = outerRadius || width / 4;
-      const xFrom = cx + Math.cos(angle) * r;
-      const yFrom = cy + Math.sin(angle) * r;
-
-      const radialOffset = 14;
-      const xMid = cx + Math.cos(angle) * (r + radialOffset);
-      const yMid = cy + Math.sin(angle) * (r + radialOffset);
-
-      const isRight = xMid >= cx;
-      const horiz = 16;
-      let xEnd = xMid + (isRight ? horiz : -horiz);
-      const yEnd = yMid;
-
-      // keep text within canvas horizontally
-      const margin = 4;
-      if (isRight && xEnd > width - margin) xEnd = width - margin;
-      if (!isRight && xEnd < margin) xEnd = margin;
-
-      ctx.beginPath();
-      ctx.moveTo(xFrom, yFrom);
-      ctx.lineTo(xMid, yMid);
-      ctx.lineTo(xEnd, yEnd);
-      ctx.stroke();
-
-      ctx.textBaseline = 'middle';
-      ctx.textAlign = isRight ? 'left' : 'right';
-      ctx.fillText(label, xEnd, yEnd);
+      // White text for visibility on dark colors
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillText(label, x, y);
     });
 
     ctx.restore();
   }
 };
 
-// Bar: value labels on top of each bar (only for bar charts)
+// Bar: amount labels INSIDE each bar
 const barValueLabelPlugin = {
   id: 'barValueLabelPlugin',
   afterDatasetsDraw(chart) {
@@ -567,20 +543,28 @@ const barValueLabelPlugin = {
 
     const ctx = chart.ctx;
     ctx.save();
-    ctx.font = '11px system-ui, -apple-system, BlinkMacSystemFont,"Segoe UI",sans-serif';
-    ctx.fillStyle = '#111827';
+    ctx.font = 'bold 12px system-ui, -apple-system, BlinkMacSystemFont,"Segoe UI",sans-serif';
+    ctx.fillStyle = '#FFFFFF';  // White for visibility inside bars
     ctx.textAlign = 'center';
-    ctx.textBaseline = 'bottom';
+    ctx.textBaseline = 'middle';
 
     meta.data.forEach((bar, index) => {
       const value = chart.data.datasets[0].data[index];
       if (!value) return;
 
       const label = formatShortAmount(value, false);
-      const pos = bar.tooltipPosition();
-      const x = pos.x;
-      const y = pos.y - 4;
-      ctx.fillText(label, x, y);
+
+      // Position in the middle of the bar
+      const x = bar.x + bar.width / 2;
+      const y = bar.y - bar.height / 2;
+
+      // If bar is too short, place above
+      if (bar.height < 20) {
+        ctx.textBaseline = 'bottom';
+        ctx.fillText(label, x, bar.y - 4);
+      } else {
+        ctx.fillText(label, x, y);
+      }
     });
 
     ctx.restore();

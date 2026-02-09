@@ -237,9 +237,7 @@
     height: 220px !important;
 }
 
-/* =========================
-   Legends
-   ========================= */
+   /* Legends */
 .chart-legend {
     display: flex;
     flex-wrap: wrap;

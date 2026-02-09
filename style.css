@@ -203,7 +203,7 @@ footer nav a:hover, footer nav a.active {
 }
 
 .download-btn {
-    background-color: #7389F4; /* Light blue from your screenshot */
+    background-color: #7389F4;
     color: white;
     padding: 8px 16px;
     border-radius: 4px;
@@ -243,17 +243,14 @@ td {
     font-size: 0.85rem;
 }
 .category-badge {
-    background-color: #e0e7ff; /* Light indigo */
-    color: #4338ca; /* Dark indigo */
+    background-color: #e0e7ff;
+    color: #4338ca;
     padding: 4px 10px;
     border-radius: 12px;
     font-size: 0.85rem;
     font-weight: 500;
     display: inline-block;
 }
-/* =========================
-   Transactions: header row
-   ========================= */
 .transactions-list .list-header{
   display:flex;
   align-items:center;
@@ -289,7 +286,7 @@ td {
 .period-section h2{
   margin: 0 0 10px 0;
   font-size: 1.05rem;
-  border: none;            /* avoid double borders if your global h2 has borders */
+  border: none;
   padding-bottom: 0;
   color: #1f2937;
 }

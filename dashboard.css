@@ -168,9 +168,7 @@
     color: #6e8efb;
 }
 
-/* =========================
-   Visualizations
-   ========================= */
+   /* Visualizations */
 .charts-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));

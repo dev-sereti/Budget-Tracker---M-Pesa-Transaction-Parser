@@ -339,8 +339,7 @@ td {
   border-color:#4F46E5;
   box-shadow: 0 6px 14px rgba(79, 70, 229, 0.18);
 }
-
-/* Custom range row (hidden until .show is added by JS) */
+/* Custom range */
 .custom-range{
   display:none;
   flex-wrap:wrap;

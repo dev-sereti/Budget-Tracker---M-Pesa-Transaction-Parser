@@ -3,7 +3,7 @@ const { Pool } = require('pg');
 const cors = require('cors');
 const socketIo = require('socket.io');
 const http = require('http');
-const jwt = require('jsonwebtoken');  // For auth (npm i jsonwebtoken)
+const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
 const app = express();

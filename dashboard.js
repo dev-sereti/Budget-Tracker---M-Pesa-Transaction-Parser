@@ -435,7 +435,7 @@ function updateFromFiltered() {
   // Top N + Others
   const topData = getTopCategoriesWithOthers(categoryTotals, TOP_N_CATEGORIES);
 
-  // colors by category (stable mapping)
+  // colors by category
   const colors = topData.map(item => getColorForCategory(item.category));
 
   // Update Donut

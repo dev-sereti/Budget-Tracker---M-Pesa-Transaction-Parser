@@ -251,6 +251,184 @@ td {
     font-weight: 500;
     display: inline-block;
 }
+/* =========================
+   Transactions: header row
+   ========================= */
+.transactions-list .list-header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  flex-wrap:wrap;
+  margin-bottom: 12px;
+}
+
+.download-btn{
+  background:#6e8efb;
+  color:#fff;
+  border:none;
+  padding:10px 16px;
+  border-radius:10px;
+  font-weight:600;
+  cursor:pointer;
+  transition:0.2s;
+}
+
+.download-btn:hover{ filter:brightness(0.95); }
+.download-btn:active{ transform:translateY(1px); }
+
+/* =========================
+   Period Filter (chips + custom range)
+   Uses classes from your HTML:
+   .period-section, .period-filter, .period-buttons, .chip,
+   .custom-range, .apply-btn, .range-label
+   ========================= */
+.period-section{
+  margin-top: 10px;
+  padding: 14px;
+  border: 1px solid #eef2ff;
+  border-radius: 12px;
+  background: #fafbff;
+}
+
+.period-section h2{
+  margin: 0 0 10px 0;
+  font-size: 1.05rem;
+  border: none;            /* avoid double borders if your global h2 has borders */
+  padding-bottom: 0;
+  color: #1f2937;
+}
+
+/* Layout wrapper */
+.period-filter{
+  display:flex;
+  flex-direction:column;
+  gap: 10px;
+}
+
+/* Chip row */
+.period-buttons{
+  display:flex;
+  flex-wrap:wrap;
+  gap: 10px;
+  align-items:center;
+}
+
+/* Clickable chips */
+.chip{
+  appearance: none;
+  -webkit-appearance: none;
+  border: 1px solid #dbe3ff;
+  background: #ffffff;
+  color: #1f2937;
+  padding: 8px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.9rem;
+  line-height: 1;
+  transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.05s;
+  user-select: none;
+  pointer-events: auto;
+}
+
+.chip:hover{
+  background:#f3f6ff;
+  border-color:#c7d2fe;
+}
+
+.chip:active{
+  transform: translateY(1px);
+}
+
+.chip.active{
+  background:#4F46E5;
+  color:#fff;
+  border-color:#4F46E5;
+  box-shadow: 0 6px 14px rgba(79, 70, 229, 0.18);
+}
+
+/* Custom range row (hidden until .show is added by JS) */
+.custom-range{
+  display:none;
+  flex-wrap:wrap;
+  gap: 10px;
+  align-items:flex-end;
+  padding-top: 6px;
+}
+
+.custom-range.show{
+  display:flex;
+}
+
+/* Custom labels */
+.custom-range label{
+  font-size: 0.85rem;
+  color:#4b5563;
+  font-weight:700;
+}
+
+/* Date inputs */
+.custom-range input[type="date"]{
+  border: 1px solid #dbe3ff;
+  border-radius: 10px;
+  padding: 9px 10px;
+  background:#fff;
+  min-width: 170px;
+}
+
+/* Apply button */
+.apply-btn{
+  background:#4F46E5;
+  color:#fff;
+  border:none;
+  padding:10px 14px;
+  border-radius:10px;
+  cursor:pointer;
+  font-weight:800;
+  transition:0.2s;
+}
+
+.apply-btn:hover{ filter:brightness(0.95); }
+.apply-btn:active{ transform:translateY(1px); }
+
+/* Selected range label */
+.range-label{
+  font-size: 0.9rem;
+  color:#4b5563;
+}
+.table-responsive{
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #eef2ff;
+}
+
+#transactionsTable th{
+  background:#f7f8ff;
+}
+
+/* Category badge (your HTML uses category-badge) */
+.category-badge{
+  display:inline-block;
+  background:#eef2ff;
+  color:#3730a3;
+  padding:4px 10px;
+  border-radius:999px;
+  font-size:0.8rem;
+  font-weight:700;
+}
+
+
+   /* Responsive tweaks */
+@media (max-width: 600px){
+  .custom-range input[type="date"]{
+    width: 100%;
+    min-width: unset;
+  }
+  .apply-btn{
+    width: 100%;
+  }
+}
 
 /* Responsive design */
 @media (max-width: 768px) {

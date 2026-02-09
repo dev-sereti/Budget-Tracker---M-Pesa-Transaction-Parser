@@ -1,18 +1,34 @@
-/* Dashboard-specific styles */
-.income-section, .kpi-section, .top-categories, .visualizations {
-    background: white;
+/* =========================
+   Dashboard-specific styles
+   ========================= */
+
+/* Cards / sections */
+.income-section,
+.period-section,
+.kpi-section,
+.top-categories,
+.visualizations {
+    background: #fff;
     padding: 1.5rem;
     border-radius: 10px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
-.income-section h2, .kpi-section h2, .top-categories h2, .visualizations h2 {
+/* Section headings */
+.income-section h2,
+.period-section h2,
+.kpi-section h2,
+.top-categories h2,
+.visualizations h2 {
     margin-bottom: 1rem;
     color: #444;
     border-bottom: 2px solid #6e8efb;
     padding-bottom: 0.5rem;
 }
 
+/* =========================
+   Monthly Budget / Income
+   ========================= */
 .income-input {
     display: flex;
     gap: 10px;
@@ -23,7 +39,7 @@
 .income-input input {
     padding: 8px 15px;
     border: 1px solid #ddd;
-    border-radius: 5px;
+    border-radius: 8px;
     font-size: 1rem;
     width: 200px;
 }
@@ -31,13 +47,101 @@
 .income-input button {
     padding: 8px 15px;
     background: #6e8efb;
-    color: white;
+    color: #fff;
     border: none;
-    border-radius: 5px;
+    border-radius: 8px;
     cursor: pointer;
-    font-weight: 500;
+    font-weight: 600;
 }
 
+.income-input button:hover {
+    filter: brightness(0.95);
+}
+
+/* =========================
+   Period Filter
+   ========================= */
+.period-filter {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.period-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+/* Filter chips */
+.chip {
+    border: 1px solid #ddd;
+    background: #f7f7f7;
+    padding: 8px 14px;
+    border-radius: 999px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: 0.2s;
+    user-select: none;
+}
+
+.chip:hover {
+    background: #efefef;
+}
+
+.chip.active {
+    background: #4F46E5;
+    color: #fff;
+    border-color: #4F46E5;
+}
+
+/* Custom date range row */
+.custom-range {
+    display: none;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
+.custom-range.show {
+    display: flex;
+}
+
+.custom-range label {
+    font-weight: 600;
+    color: #333;
+}
+
+.custom-range input[type="date"] {
+    padding: 8px 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #fff;
+}
+
+.apply-btn {
+    padding: 9px 14px;
+    border: none;
+    border-radius: 8px;
+    background: #4F46E5;
+    color: #fff;
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.apply-btn:hover {
+    filter: brightness(0.95);
+}
+
+/* Selected range label text */
+.range-label {
+    font-size: 0.9rem;
+    color: #555;
+}
+
+/* =========================
+   KPI Cards
+   ========================= */
 .kpi-cards {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -49,6 +153,7 @@
     padding: 1rem;
     border-radius: 8px;
     text-align: center;
+    border: 1px solid #f0f0f0;
 }
 
 .kpi-card h3 {
@@ -59,11 +164,13 @@
 
 .kpi-card .kpi-value {
     font-size: 1.5rem;
-    font-weight: bold;
+    font-weight: 800;
     color: #6e8efb;
 }
 
-/* --- VISUALIZATIONS --- */
+/* =========================
+   Visualizations
+   ========================= */
 .charts-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -73,8 +180,17 @@
 
 .chart-wrapper.small {
     padding: 1rem;
+    border: 1px solid #f0f0f0;
+    border-radius: 10px;
+    background: #fff;
 }
 
+.chart-wrapper h3 {
+    margin-bottom: 10px;
+    color: #333;
+}
+
+/* Donut */
 .donut-box {
     position: relative;
     width: 200px;
@@ -106,33 +222,11 @@
 
 .donut-center-value {
     font-size: 1.1rem;
-    font-weight: 700;
+    font-weight: 800;
     color: #222;
 }
 
-/* Legend Styles */
-.chart-legend {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 12px;
-    margin-top: 12px;
-    font-size: 0.85rem;
-    color: #444;
-}
-
-.legend-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.legend-color {
-    width: 12px;
-    height: 12px;
-    border-radius: 3px;
-}
-
+/* Bar */
 .bar-box {
     width: 100%;
     height: 220px;
@@ -141,4 +235,68 @@
 .bar-box canvas {
     width: 100% !important;
     height: 220px !important;
+}
+
+/* =========================
+   Legends
+   ========================= */
+.chart-legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 12px;
+    font-size: 0.9rem;
+    color: #444;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 6px;
+    border-radius: 6px;
+}
+
+.legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    flex: 0 0 12px;
+}
+   /* Responsive tweaks */
+@media (max-width: 768px) {
+    .income-input input {
+        width: 100%;
+    }
+
+    .charts-container {
+        grid-template-columns: 1fr;
+    }
+
+    .donut-box {
+        width: 180px;
+        height: 180px;
+    }
+
+    .donut-box canvas {
+        width: 180px !important;
+        height: 180px !important;
+    }
+
+    .bar-box {
+        height: 200px;
+    }
+
+    .bar-box canvas {
+        height: 200px !important;
+    }
+
+    .custom-range {
+        width: 100%;
+    }
+
+    .custom-range input[type="date"] {
+        width: 100%;
+    }
 }

@@ -1,11 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dashboard</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="dashboard.css">
+
+    <!-- Global styles -->
+    <link rel="stylesheet" href="style.css" />
+    <!-- Dashboard-specific styles (includes budget card styles) -->
+    <link rel="stylesheet" href="dashboard.css" />
+
+    <!-- Charts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
@@ -16,14 +21,30 @@
         </header>
 
         <main>
+            <!-- =======================
+                 MONTHLY BUDGET
+            ======================== -->
             <section class="income-section">
                 <h2>Monthly Budget</h2>
+
                 <div class="income-input">
-                    <label for="monthlyIncome"> <b>Budget</b></label>
-                    <input type="number" id="monthlyIncome" placeholder="e.g., 50000" min="0">
+                    <label for="monthlyIncome"><b>Budget</b></label>
+                    <input
+                        type="number"
+                        id="monthlyIncome"
+                        placeholder="e.g., 50000"
+                        min="0"
+                    />
                     <button id="setIncome">Set</button>
                 </div>
+
+                <!-- Budget card will be rendered/updated here by dashboard.js -->
+                <div id="budgetCardContainer"></div>
             </section>
+
+            <!-- =======================
+                 PERIOD FILTER
+            ======================== -->
             <section class="period-section">
                 <h2>Period Filter</h2>
 
@@ -48,6 +69,9 @@
                 </div>
             </section>
 
+            <!-- =======================
+                 KPIs
+            ======================== -->
             <section class="kpi-section">
                 <h2>Financial Overview</h2>
                 <div class="kpi-cards">
@@ -66,9 +90,14 @@
                 </div>
             </section>
 
+            <!-- =======================
+                 VISUALIZATIONS
+            ======================== -->
             <section class="visualizations">
                 <h2>Financial Visualizations</h2>
+
                 <div class="charts-container">
+                    <!-- Donut chart -->
                     <div class="chart-wrapper small">
                         <h3>Spending by Category</h3>
 
@@ -76,14 +105,16 @@
                             <canvas id="doughnutChart"></canvas>
                             <div class="donut-center">
                                 <div class="donut-center-title">Total Spent</div>
-                                <div id="donutCenterValue" class="donut-center-value">Ksh 0</div>
+                                <div id="donutCenterValue" class="donut-center-value">
+                                    Ksh 0
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Optional donut legend if you want it too -->
                         <div id="donutLegend" class="chart-legend"></div>
                     </div>
 
+                    <!-- Bar chart -->
                     <div class="chart-wrapper small">
                         <h3>Spending Trends</h3>
                         <div class="bar-box">
@@ -104,6 +135,7 @@
         </footer>
     </div>
 
+    <!-- Dashboard logic (handles budget card, filters, charts, etc.) -->
     <script src="dashboard.js"></script>
 </body>
 </html>

@@ -1,5 +1,3 @@
-/* Dashboard-specific styles */
-
 /* Cards / sections */
 .income-section,
 .period-section,
@@ -24,12 +22,18 @@
     padding-bottom: 0.5rem;
 }
 
-   /* Monthly Budget*/
+/* Monthly Budget */
 .income-input {
     display: flex;
     gap: 10px;
     align-items: center;
     flex-wrap: wrap;
+    margin-top: 0.5rem;
+}
+
+.income-input label {
+    min-width: 70px;
+    font-size: 0.95rem;
 }
 
 .income-input input {
@@ -54,7 +58,55 @@
     filter: brightness(0.95);
 }
 
-   /* Period Filter */
+/* Budget card under Monthly Budget */
+#budgetCardContainer {
+    margin-top: 16px;
+}
+
+/* Card itself */
+.budget-card {
+    max-width: 340px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    background: #f5f7ff;
+    border: 1px solid #d0d9ff;
+    box-shadow: 0 2px 4px rgba(15, 23, 42, 0.04);
+}
+
+/* Header with label + edit button */
+.budget-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: #4b5563;
+    margin-bottom: 6px;
+}
+
+/* Amount */
+.budget-card-body .budget-amount {
+    font-size: 1.35rem;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+/* Edit button */
+.budget-edit-btn {
+    border: 1px solid #c7d2fe;
+    background: #eef2ff;
+    color: #3730a3;
+    border-radius: 999px;
+    padding: 4px 10px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.budget-edit-btn:hover {
+    background: #e0e7ff;
+}
+
+/* Period Filter */
 .period-filter {
     display: flex;
     flex-direction: column;
@@ -133,8 +185,7 @@
     color: #555;
 }
 
-   /* KPI Cards */
-
+/* KPI Cards */
 .kpi-cards {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -161,7 +212,7 @@
     color: #6e8efb;
 }
 
-   /* Visualizations */
+/* Visualizations */
 .charts-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -228,7 +279,7 @@
     height: 220px !important;
 }
 
-   /* Legends */
+/* Legends */
 .chart-legend {
     display: flex;
     flex-wrap: wrap;
@@ -253,10 +304,62 @@
     border-radius: 3px;
     flex: 0 0 12px;
 }
-   /* Responsive tweaks */
+/* ==== Budget card inline editing ==== */
+
+.budget-card-edit-row {
+    margin-top: 6px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+.budget-edit-input {
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    font-size: 0.95rem;
+    max-width: 150px;
+}
+
+.budget-save-btn,
+.budget-cancel-btn {
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: none;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.budget-save-btn {
+    background: #4F46E5;
+    color: #fff;
+}
+
+.budget-save-btn:hover {
+    filter: brightness(0.95);
+}
+
+.budget-cancel-btn {
+    background: #e5e7eb;
+    color: #374151;
+}
+
+.budget-cancel-btn:hover {
+    filter: brightness(0.95);
+}
+
+/* Responsive tweaks */
 @media (max-width: 768px) {
     .income-input input {
         width: 100%;
+    }
+
+    #budgetCardContainer,
+    .budget-card {
+        width: 100%;
+        max-width: 100%;
     }
 
     .charts-container {

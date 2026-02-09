@@ -211,10 +211,6 @@ function loadData() {
     localStorage.setItem('budgetTrackerTransactions', JSON.stringify(allTransactions));
   }
 }
-
-/* ---------------------------
-   Period Filter Wiring
----------------------------- */
 function setupPeriodFilter() {
   const btnWrap = document.getElementById("dashPeriodButtons");
   const customBox = document.getElementById("dashCustomRange");

@@ -19,13 +19,17 @@ function loadTransactions() {
   const saved = localStorage.getItem("budgetTrackerTransactions");
   allTransactions = saved ? JSON.parse(saved) : [];
 
-  // Ensure txDateMs exists for filtering
+  // Ensure txDateMs exists for filtering - ALWAYS recalculate from date string
   let changed = false;
   allTransactions.forEach(tx => {
-    if (!Number.isFinite(tx.txDateMs)) {
-      tx.txDateMs = guessTxDateMs(tx);
+    const parsedDateMs = parseTxDateFromString(tx.date);
+    
+    // Always use the parsed date from the transaction date string
+    if (parsedDateMs !== tx.txDateMs) {
+      tx.txDateMs = parsedDateMs;
       changed = true;
     }
+    
     tx.amount = Number(tx.amount || 0);
     tx.fee = Number(tx.fee || 0);
     tx.totalAmount = Number(tx.totalAmount ?? (tx.amount + tx.fee));
@@ -35,32 +39,47 @@ function loadTransactions() {
   if (changed) localStorage.setItem("budgetTrackerTransactions", JSON.stringify(allTransactions));
 }
 
-function guessTxDateMs(tx) {
-  // Prefer timestamp field if exists
-  if (Number.isFinite(tx.timestamp)) return tx.timestamp;
-
-  // Parse "6/2/26 7:17 AM"
-  if (typeof tx.date === "string") {
-    const m = tx.date.trim().match(
-      /^(\d{1,2})\/(\d{1,2})\/(\d{2,4})\s+(\d{1,2}):(\d{2})\s*([AP]M)$/i
-    );
-    if (m) {
-      const dd = Number(m[1]);
-      const mm = Number(m[2]) - 1;
-      let yy = Number(m[3]);
-      if (yy < 100) yy += 2000;
-
-      let hh = Number(m[4]);
-      const min = Number(m[5]);
-      const ap = m[6].toUpperCase();
-      if (ap === "PM" && hh !== 12) hh += 12;
-      if (ap === "AM" && hh === 12) hh = 0;
-
-      return new Date(yy, mm, dd, hh, min, 0, 0).getTime();
-    }
+/**
+ * Parse transaction date from the date string in the format "6/2/26 7:17 AM"
+ * This ensures period filtering is based on the actual transaction date, not input date
+ */
+function parseTxDateFromString(dateStr) {
+  if (typeof dateStr !== "string" || !dateStr.trim()) {
+    return Date.now(); // Fallback to now if no date string
   }
 
+  // Parse "6/2/26 7:17 AM" or "6/2/26 at 7:17 AM"
+  const cleaned = dateStr.trim().replace(/\s+at\s+/i, ' ');
+  const m = cleaned.match(
+    /^(\d{1,2})\/(\d{1,2})\/(\d{2,4})\s+(\d{1,2}):(\d{2})\s*([AP]M)$/i
+  );
+  
+  if (m) {
+    const dd = Number(m[1]);
+    const mm = Number(m[2]) - 1; // Month is 0-indexed
+    let yy = Number(m[3]);
+    
+    // Convert 2-digit year to 4-digit (assumes 2000s)
+    if (yy < 100) yy += 2000;
+
+    let hh = Number(m[4]);
+    const min = Number(m[5]);
+    const ap = m[6].toUpperCase();
+    
+    // Convert 12-hour to 24-hour format
+    if (ap === "PM" && hh !== 12) hh += 12;
+    if (ap === "AM" && hh === 12) hh = 0;
+
+    return new Date(yy, mm, dd, hh, min, 0, 0).getTime();
+  }
+
+  // If parsing fails, return current time as fallback
   return Date.now();
+}
+
+// Keep old function for backward compatibility but redirect to new one
+function guessTxDateMs(tx) {
+  return parseTxDateFromString(tx.date);
 }
 
 /* -------------------

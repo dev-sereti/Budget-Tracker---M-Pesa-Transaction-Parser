@@ -28,7 +28,7 @@ function renderTable(data) {
         
         const total = t.totalAmount || (t.amount + t.fee);
 
-        // FIX: Safely handle balance display to avoid NaN
+        // Safely handle balance display to avoid NaN
         const balanceCell = (t.balance !== undefined && t.balance !== null)
             ? `Ksh ${parseFloat(t.balance).toFixed(2)}`
             : '-';

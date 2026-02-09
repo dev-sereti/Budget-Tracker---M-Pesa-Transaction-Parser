@@ -46,13 +46,25 @@
             <section class="visualizations">
                 <h2>Financial Visualizations</h2>
                 <div class="charts-container">
-                    <div class="chart-wrapper">
+                    <div class="chart-wrapper small">
                         <h3>Spending by Category</h3>
-                        <canvas id="doughnutChart"></canvas>
+
+                        <div class="donut-box">
+                            <canvas id="doughnutChart"></canvas>
+                            <div class="donut-center">
+                                <div class="donut-center-title">Total Spent</div>
+                                <div id="donutCenterValue" class="donut-center-value">Ksh 0</div>
+                            </div>
+                        </div>
+
+                        <div class="donut-legend-note" id="donutLegendNote"></div>
                     </div>
-                    <div class="chart-wrapper">
+
+                    <div class="chart-wrapper small">
                         <h3>Spending Trends</h3>
-                        <canvas id="barChart"></canvas>
+                        <div class="bar-box">
+                            <canvas id="barChart"></canvas>
+                        </div>
                     </div>
                 </div>
             </section>

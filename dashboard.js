@@ -1,235 +1,166 @@
-// Global variables
 let monthlyIncome = 0;
 let transactions = [];
 let categoryTotals = {};
-let topCategories = [];
 
-// Initialize the dashboard
+// Global Chart instances
+let doughnutChart, barChart;
+
+// Config: show only top 5 categories + Others
+const TOP_N_CATEGORIES = 5;
+
 document.addEventListener('DOMContentLoaded', function() {
-    // Load saved transactions from localStorage
-    loadTransactions();
-    
-    // Set up event listeners
+    loadData();
     document.getElementById('setIncome').addEventListener('click', setMonthlyIncome);
-    
-    // Load saved income from localStorage
-    loadMonthlyIncome();
-    
-    // Initialize charts
-    initializeCharts();
-    
-    // Update dashboard with current data
+    initCharts();
     updateDashboard();
 });
 
-// Load transactions from localStorage
-function loadTransactions() {
-    const saved = localStorage.getItem('budgetTrackerTransactions');
-    if (saved) {
-        try {
-            transactions = JSON.parse(saved);
-        } catch (e) {
-            console.error('Error loading transactions:', e);
-            transactions = [];
-        }
+function loadData() {
+    // Load income
+    monthlyIncome = parseFloat(localStorage.getItem('monthlyIncome') || '0');
+    if (monthlyIncome > 0) {
+        document.getElementById('monthlyIncome').value = monthlyIncome;
     }
-    
-    // Calculate category totals
+
+    // Load transactions
+    const saved = localStorage.getItem('budgetTrackerTransactions');
+    transactions = saved ? JSON.parse(saved) : [];
+
     calculateCategoryTotals();
 }
 
-// Load monthly income from localStorage
-function loadMonthlyIncome() {
-    const savedIncome = localStorage.getItem('monthlyIncome');
-    if (savedIncome) {
-        monthlyIncome = parseFloat(savedIncome);
-        document.getElementById('monthlyIncome').value = monthlyIncome;
-    }
-}
-
-// Set monthly income
 function setMonthlyIncome() {
-    const incomeInput = document.getElementById('monthlyIncome');
-    const incomeValue = parseFloat(incomeInput.value);
-    
-    if (isNaN(incomeValue) || incomeValue < 0) {
-        alert('Please enter a valid monthly income');
+    const input = document.getElementById('monthlyIncome');
+    const value = parseFloat(input.value);
+
+    if (isNaN(value) || value < 0) {
+        alert("Please enter a valid non-negative number.");
         return;
     }
-    
-    monthlyIncome = incomeValue;
+
+    monthlyIncome = value;
     localStorage.setItem('monthlyIncome', monthlyIncome.toString());
-    
-    // Update dashboard
     updateDashboard();
 }
 
-// Calculate category totals
 function calculateCategoryTotals() {
     categoryTotals = {};
-    
     transactions.forEach(transaction => {
-        const category = transaction.category;
-        const amount = transaction.totalAmount;
-        
-        if (!categoryTotals[category]) {
-            categoryTotals[category] = 0;
-        }
-        
-        categoryTotals[category] += amount;
+        const category = transaction.category || 'Others';
+        const amount = transaction.totalAmount || 0;
+        categoryTotals[category] = (categoryTotals[category] || 0) + amount;
     });
-    
-    // Sort categories by spending amount (descending)
-    topCategories = Object.keys(categoryTotals)
-        .map(category => ({ category, amount: categoryTotals[category] }))
-        .sort((a, b) => b.amount - a.amount)
-        .slice(0, 3); // Top 3 categories
 }
 
-// Update dashboard with current data
-function updateDashboard() {
-    // Calculate total spent
-    const totalSpent = transactions.reduce((sum, transaction) => sum + transaction.totalAmount, 0);
-    
-    // Calculate remaining balance
-    const remainingBalance = monthlyIncome - totalSpent;
-    
-    // Calculate savings rate
-    const savingsRate = monthlyIncome > 0 ? ((remainingBalance / monthlyIncome) * 100).toFixed(1) : 0;
-    
-    // Update KPIs
-    document.getElementById('totalSpent').textContent = `Ksh ${totalSpent.toFixed(2)}`;
-    document.getElementById('remainingBalance').textContent = `Ksh ${remainingBalance.toFixed(2)}`;
-    document.getElementById('savingsRate').textContent = `${savingsRate}%`;
-    
-    // Update top categories list
-    updateTopCategoriesList();
-    
-    // Update charts
-    updateCharts();
-}
+function getTopCategoriesWithOthers(totals, topN = 5) {
+    const entries = Object.entries(totals)
+        .map(([category, amount]) => ({ category, amount }))
+        .filter(item => item.amount > 0)
+        .sort((a, b) => b.amount - a.amount);
 
-// Update top categories list
-function updateTopCategoriesList() {
-    const container = document.getElementById('topCategoriesList');
-    container.innerHTML = '';
-    
-    if (topCategories.length === 0) {
-        container.innerHTML = '<p>No transactions recorded yet.</p>';
-        return;
+    const top = entries.slice(0, topN);
+    const othersSum = entries.slice(topN).reduce((sum, item) => sum + item.amount, 0);
+
+    if (othersSum > 0) {
+        top.push({ category: 'Others', amount: othersSum });
     }
-    
-    topCategories.forEach((item, index) => {
-        const categoryItem = document.createElement('div');
-        categoryItem.className = 'category-item';
-        categoryItem.innerHTML = `
-            <span class="category-name">${index + 1}. ${item.category}</span>
-            <span class="category-amount">Ksh ${item.amount.toFixed(2)}</span>
-        `;
-        container.appendChild(categoryItem);
-    });
+
+    return top;
 }
 
-// Initialize charts
-function initializeCharts() {
-    // Create pie chart
-    const pieCtx = document.getElementById('pieChart').getContext('2d');
-    window.pieChart = new Chart(pieCtx, {
-        type: 'pie',
+function formatCurrency(amount) {
+    return `Ksh ${amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
+function initCharts() {
+    // DOUGHNUT CHART
+    const donutCtx = document.getElementById('doughnutChart').getContext('2d');
+    doughnutChart = new Chart(donutCtx, {
+        type: 'doughnut',
         data: {
             labels: [],
             datasets: [{
                 data: [],
                 backgroundColor: [
-                    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
-                    '#FF9F40', '#8AC249', '#F06292', '#7986CB', '#E57373'
+                    '#4F46E5', '#06B6D4', '#F59E0B', '#22C55E', '#EF4444', '#A855F7'
                 ],
-                borderWidth: 1
+                borderWidth: 0,
+                hoverOffset: 4
             }]
         },
         options: {
-            responsive: true,
+            responsive: false,           // Fixed size
+            maintainAspectRatio: false,  // Ignore aspect ratio
+            cutout: '70%',               // Thin ring (donut style)
             plugins: {
-                legend: {
-                    position: 'bottom'
-                },
+                legend: { display: false }, // Hide legend for compact look
                 tooltip: {
                     callbacks: {
-                        label: function(context) {
+                        label: (context) => {
                             const label = context.label || '';
                             const value = context.raw || 0;
-                            const percentage = ((value / context.dataset.data.reduce((a, b) => a + b, 0)) * 100).toFixed(1);
-                            return `${label}: Ksh ${value.toFixed(2)} (${percentage}%)`;
+                            return `${label}: ${formatCurrency(value)}`;
                         }
                     }
                 }
             }
         }
     });
-    
-    // Create bar chart
+
+    // Bar Chart
     const barCtx = document.getElementById('barChart').getContext('2d');
-    window.barChart = new Chart(barCtx, {
+    barChart = new Chart(barCtx, {
         type: 'bar',
         data: {
             labels: [],
             datasets: [{
-                label: 'Spending by Category',
                 data: [],
-                backgroundColor: [
-                    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
-                    '#FF9F40', '#8AC249', '#F06292', '#7986CB', '#E57373'
-                ],
-                borderWidth: 1
+                backgroundColor: '#4F46E5',
+                borderRadius: 6
             }]
         },
         options: {
             responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
             scales: {
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Amount (Ksh)'
-                    }
-                },
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Category'
-                    }
-                }
-            },
-            plugins: {
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            const label = context.label || '';
-                            const value = context.raw || 0;
-                            return `${label}: Ksh ${value.toFixed(2)}`;
-                        }
-                    }
-                }
+                y: { beginAtZero: true },
+                x: { ticks: { maxRotation: 45, minRotation: 45 } }
             }
         }
     });
 }
 
-// Update charts with current data
-function updateCharts() {
-    // Update pie chart
-    const categories = Object.keys(categoryTotals);
-    const amounts = Object.values(categoryTotals);
-    
-    window.pieChart.data.labels = categories;
-    window.pieChart.data.datasets[0].data = amounts;
-    window.pieChart.update();
-    
-    // Update bar chart
-    window.barChart.data.labels = categories;
-    window.barChart.data.datasets[0].data = amounts;
-    window.barChart.update();
+function updateDashboard() {
+    // Calculate KPIs
+    const totalSpent = transactions.reduce((sum, t) => sum + (t.totalAmount || 0), 0);
+    const remainingBalance = monthlyIncome - totalSpent;
+    const savingsRate = monthlyIncome > 0 ? (remainingBalance / monthlyIncome) * 100 : 0;
+
+    // Update KPIs
+    document.getElementById('totalSpent').textContent = formatCurrency(totalSpent);
+    document.getElementById('remainingBalance').textContent = formatCurrency(remainingBalance);
+    document.getElementById('savingsRate').textContent = `${savingsRate.toFixed(1)}%`;
+
+    // Update Donut Center Value
+    document.getElementById('donutCenterValue').textContent = formatCurrency(totalSpent);
+
+    // Get Top N + Others
+    const topData = getTopCategoriesWithOthers(categoryTotals, TOP_N_CATEGORIES);
+
+    // Update Doughnut Chart
+    doughnutChart.data.labels = topData.map(item => item.category);
+    doughnutChart.data.datasets[0].data = topData.map(item => item.amount);
+    doughnutChart.update();
+
+    // Update Bar Chart
+    barChart.data.labels = topData.map(item => item.category);
+    barChart.data.datasets[0].data = topData.map(item => item.amount);
+    barChart.update();
+
+    // Update note under donut
+    const noteText = topData.length > 0 
+        ? `Showing top ${Math.min(TOP_N_CATEGORIES, Object.keys(categoryTotals).length)} categories` 
+        : "No spending data yet.";
+    document.getElementById('donutLegendNote').textContent = noteText;
 }

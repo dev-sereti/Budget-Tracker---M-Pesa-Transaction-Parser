@@ -130,7 +130,7 @@ function initCharts() {
         data: {
             labels: [],
             datasets: [{
-                label: 'Spending', // Dataset label (for tooltip)
+                label: 'Spending', // Dataset label
                 data: [],
                 backgroundColor: [], // Will be filled dynamically
                 borderRadius: 6

@@ -25,6 +25,31 @@
                 </div>
             </section>
 
+            <!-- ✅ PERIOD FILTER (NEW) -->
+            <section class="period-section">
+                <h2>Period Filter</h2>
+
+                <div class="period-filter">
+                    <div class="period-buttons" id="dashPeriodButtons">
+                        <button class="chip" data-period="lastWeek">Last Week</button>
+                        <button class="chip" data-period="today">Today</button>
+                        <button class="chip" data-period="thisWeek">This Week</button>
+                        <button class="chip active" data-period="thisMonth">This Month</button>
+                        <button class="chip" data-period="custom">Custom</button>
+                    </div>
+
+                    <div class="custom-range" id="dashCustomRange">
+                        <label for="dashDateFrom">Date From</label>
+                        <input type="date" id="dashDateFrom" />
+                        <label for="dashDateTo">Date To</label>
+                        <input type="date" id="dashDateTo" />
+                        <button class="apply-btn" id="dashApplyCustom">Apply</button>
+                    </div>
+
+                    <div class="range-label" id="dashRangeLabel"></div>
+                </div>
+            </section>
+
             <section class="kpi-section">
                 <h2>Financial Overview</h2>
                 <div class="kpi-cards">
@@ -56,6 +81,9 @@
                                 <div id="donutCenterValue" class="donut-center-value">Ksh 0</div>
                             </div>
                         </div>
+
+                        <!-- Optional donut legend if you want it too -->
+                        <div id="donutLegend" class="chart-legend"></div>
                     </div>
 
                     <div class="chart-wrapper small">
@@ -63,7 +91,6 @@
                         <div class="bar-box">
                             <canvas id="barChart"></canvas>
                         </div>
-                        <!-- Custom Legend for Bar Chart -->
                         <div id="barChartLegend" class="chart-legend"></div>
                     </div>
                 </div>

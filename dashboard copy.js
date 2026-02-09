@@ -53,7 +53,7 @@ function formatCurrency(amount) {
   })}`;
 }
 
-// Short format: 1.2K, 3.4M, 5.6B
+// Short format for chart labels: 1.2K, 3.4M, 5.6B
 function formatShortAmount(amount, includeCurrency = false) {
   const n = Number(amount || 0);
   const abs = Math.abs(n);
@@ -218,18 +218,19 @@ function normalizeTransactions(list) {
   return { list, changed };
 }
 
+/* ============
+   Init
+============ */
+
 document.addEventListener('DOMContentLoaded', function () {
-  loadData();          // loads budget + transactions
-  initBudgetSection(); // wires Set button + renders budget KPI if exists
+  loadData();
+  initBudgetSection();
   initCharts();
   setupPeriodFilter();
-
-  // Default: This Month
   applyPresetFilter("thisMonth");
 });
 
 function loadData() {
-  // Load budget from new key, fall back to old key for compatibility
   const storedBudget = localStorage.getItem(DASHBOARD_BUDGET_KEY);
   const legacyBudget = localStorage.getItem('monthlyIncome');
   let budgetVal = 0;
@@ -245,7 +246,6 @@ function loadData() {
   monthlyIncome = budgetVal;
   currentMonthlyBudget = budgetVal > 0 ? budgetVal : null;
 
-  // Load transactions
   const saved = localStorage.getItem('budgetTrackerTransactions');
   allTransactions = saved ? JSON.parse(saved) : [];
 
@@ -270,7 +270,6 @@ function setupPeriodFilter() {
 
   btnWrap.addEventListener("click", (e) => {
     e.preventDefault();
-
     const btn = e.target.closest(".chip");
     if (!btn) return;
 
@@ -281,7 +280,6 @@ function setupPeriodFilter() {
       if (customBox) customBox.classList.add("show");
       const lbl = document.getElementById("dashRangeLabel");
       if (lbl) lbl.textContent = "Select Date From and Date To, then click Apply.";
-
       filteredTransactions = [];
       updateFromFiltered();
       return;
@@ -476,30 +474,25 @@ function calculateCategoryTotals(list) {
   });
 }
 
-// Avoid duplicate "Others": aggregated bucket becomes "Other Categories"
-// if a real "Others" category already exists among the top N.
 function getTopCategoriesWithOthers(totals, topN = 5) {
   const entries = Object.entries(totals)
     .map(([category, amount]) => ({ category, amount }))
     .filter(item => item.amount > 0)
     .sort((a, b) => b.amount - a.amount);
 
-  if (entries.length <= topN) return entries;
-
   const top = entries.slice(0, topN);
-  const rest = entries.slice(topN);
-  const othersSum = rest.reduce((sum, item) => sum + item.amount, 0);
+  const othersSum = entries.slice(topN).reduce((sum, item) => sum + item.amount, 0);
+
+  if (othersSum > 0) top.push({ category: 'Others', amount: othersSum });
   return top;
 }
 
 /* ---- Custom plugins ---- */
 
-// Doughnut: leader lines + percentage labels (only for doughnut/pie)
+// Doughnut: leader lines + PERCENTAGE labels
 const doughnutLabelPlugin = {
   id: 'doughnutLabelPlugin',
   afterDraw(chart) {
-    if (chart.config.type !== 'doughnut' && chart.config.type !== 'pie') return;
-
     const meta = chart.getDatasetMeta(0);
     if (!meta || !meta.data || !meta.data.length) return;
 
@@ -509,40 +502,43 @@ const doughnutLabelPlugin = {
 
     const ctx = chart.ctx;
     ctx.save();
-    ctx.font = '11px system-ui, -apple-system, BlinkMacSystemFont,"Segoe UI",sans-serif';
+    ctx.font = '10px system-ui, -apple-system, BlinkMacSystemFont,"Segoe UI",sans-serif';
     ctx.fillStyle = '#111827';
     ctx.strokeStyle = '#111827';
     ctx.lineWidth = 1;
-
-    const width = chart.width;
 
     meta.data.forEach((arc, index) => {
       const value = Number(data[index] || 0);
       if (!value) return;
 
       const pct = (value / total) * 100;
-      const label = `${pct.toFixed(0)}%`;
+      const label = `${pct.toFixed(1)}%`;
 
-      const { x: cx, y: cy, outerRadius, startAngle, endAngle } = arc;
+      // Use tooltipPosition for robust coordinates
+      const pos = arc.tooltipPosition();
+      const cx = pos.x;
+      const cy = pos.y;
+
+      const outerRadius = arc.outerRadius || arc.outerRadius === 0
+        ? arc.outerRadius
+        : chart._metasets?.[0]?.data?.[index]?.outerRadius || 0;
+
+      const startAngle = arc.startAngle ?? 0;
+      const endAngle = arc.endAngle ?? 0;
       const angle = (startAngle + endAngle) / 2;
 
-      const r = outerRadius || width / 4;
+      const r = outerRadius || (chart.width / 4);
       const xFrom = cx + Math.cos(angle) * r;
       const yFrom = cy + Math.sin(angle) * r;
 
-      const radialOffset = 14;
+      const radialOffset = 18;
       const xMid = cx + Math.cos(angle) * (r + radialOffset);
       const yMid = cy + Math.sin(angle) * (r + radialOffset);
 
       const isRight = xMid >= cx;
-      const horiz = 16;
-      let xEnd = xMid + (isRight ? horiz : -horiz);
+      const horiz = 20;
+      const xEnd = xMid + (isRight ? horiz : -horiz);
       const yEnd = yMid;
-
-      // keep text within canvas horizontally
-      const margin = 4;
-      if (isRight && xEnd > width - margin) xEnd = width - margin;
-      if (!isRight && xEnd < margin) xEnd = margin;
 
       ctx.beginPath();
       ctx.moveTo(xFrom, yFrom);
@@ -559,18 +555,16 @@ const doughnutLabelPlugin = {
   }
 };
 
-// Bar: value labels on top of each bar (only for bar charts)
+// Bar: amount labels on top of each bar
 const barValueLabelPlugin = {
   id: 'barValueLabelPlugin',
   afterDatasetsDraw(chart) {
-    if (chart.config.type !== 'bar') return;
-
     const meta = chart.getDatasetMeta(0);
     if (!meta || !meta.data || !meta.data.length) return;
 
     const ctx = chart.ctx;
     ctx.save();
-    ctx.font = '11px system-ui, -apple-system, BlinkMacSystemFont,"Segoe UI",sans-serif';
+    ctx.font = '10px system-ui, -apple-system, BlinkMacSystemFont,"Segoe UI",sans-serif';
     ctx.fillStyle = '#111827';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'bottom';
@@ -582,7 +576,7 @@ const barValueLabelPlugin = {
       const label = formatShortAmount(value, false);
       const pos = bar.tooltipPosition();
       const x = pos.x;
-      const y = pos.y - 4;
+      const y = pos.y - 4; // little gap above bar
       ctx.fillText(label, x, y);
     });
 
@@ -595,6 +589,7 @@ function initCharts() {
   const barCanvas = document.getElementById('barChart');
   if (!donutCanvas || !barCanvas) return;
 
+  // Register custom plugins
   Chart.register(doughnutLabelPlugin, barValueLabelPlugin);
 
   const donutCtx = donutCanvas.getContext('2d');
@@ -615,7 +610,7 @@ function initCharts() {
       cutout: '70%',
       plugins: {
         legend: { display: false },
-        tooltip: { enabled: false }
+        tooltip: { enabled: false }  // percentages always visible
       }
     }
   });
@@ -637,7 +632,7 @@ function initCharts() {
       maintainAspectRatio: false,
       plugins: {
         legend: { display: false },
-        tooltip: { enabled: false }
+        tooltip: { enabled: false }  // values already drawn on bars
       },
       scales: {
         y: { beginAtZero: true },

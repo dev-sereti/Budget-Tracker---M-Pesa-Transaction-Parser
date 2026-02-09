@@ -21,16 +21,33 @@
                     <button id="downloadExcel" class="download-btn">Download Excel</button>
                 </div>
 
-                <div class="filter-controls">
-                    <label for="filterSelect">Filter:</label>
-                    <select id="filterSelect">
-                        <option value="all">All</option>
-                        <option value="today">Today</option>
-                        <option value="thisWeek">This Week</option>
-                        <option value="thisMonth">This Month</option>
-                    </select>
-                </div>
-                
+                <!-- ✅ PERIOD FILTER (NEW) -->
+                <section class="period-section" style="margin-top: 10px;">
+                    <h2 style="font-size: 1.1rem;">Period Filter</h2>
+
+                    <div class="period-filter">
+                        <div class="period-buttons" id="txPeriodButtons">
+                            <button class="chip" data-period="lastWeek" type="button">Last Week</button>
+                            <button class="chip" data-period="today" type="button">Today</button>
+                            <button class="chip" data-period="thisWeek" type="button">This Week</button>
+                            <button class="chip active" data-period="thisMonth" type="button">This Month</button>
+                            <button class="chip" data-period="custom" type="button">Custom</button>
+                        </div>
+
+                        <div class="custom-range" id="txCustomRange">
+                            <label for="txDateFrom">Date From</label>
+                            <input type="date" id="txDateFrom">
+
+                            <label for="txDateTo">Date To</label>
+                            <input type="date" id="txDateTo">
+
+                            <button class="apply-btn" id="txApplyCustom" type="button">Apply</button>
+                        </div>
+
+                        <div class="range-label" id="txRangeLabel"></div>
+                    </div>
+                </section>
+
                 <div class="table-responsive">
                     <table id="transactionsTable">
                         <thead>

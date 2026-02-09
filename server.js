@@ -4,6 +4,7 @@ const cors = require('cors');
 const socketIo = require('socket.io');
 const http = require('http');
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');  // Add this for password verification
 require('dotenv').config();
 
 const app = express();
@@ -37,11 +38,11 @@ realTimePool.connect((err, client) => {
   client.query('LISTEN transaction_change');
   client.on('notification', (msg) => {
     const payload = JSON.parse(msg.payload);
-    io.to(`user_${payload.user_id}`).emit('transaction_update', payload);  // Broadcast to user's room
+    io.to(`user_${payload.user_id}`).emit('transaction_update', payload);
   });
 });
 
-// Join user room for real-time (call from client after login)
+// Socket.io connection handling
 io.on('connection', (socket) => {
   socket.on('join', (userId) => {
     socket.join(`user_${userId}`);
@@ -154,34 +155,22 @@ app.get('/api/aggregates', authenticate, async (req, res) => {
   }
 });
 
-// Example auth endpoint (login to get JWT)
+// Login endpoint to get JWT
 app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
   try {
     const result = await pool.query('SELECT user_id, password_hash FROM users WHERE email = $1', [email]);
     const user = result.rows[0];
-    if (!user || !/* verify password hash */) return res.status(401).json({ error: 'Invalid credentials' });
+    
+    if (!user || !(await bcrypt.compare(password, user.password_hash))) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
 
     const token = jwt.sign({ userId: user.user_id }, process.env.JWT_SECRET, { expiresIn: '1h' });
     res.json({ token });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
-});
-
-// Real-time: Socket.io integration
-io.on('connection', (socket) => {
-  socket.on('join', (userId) => {
-    socket.join(`user_${userId}`);
-  });
-});
-
-// Listen to DB notifications
-const realTimeClient = await realTimePool.connect();
-realTimeClient.query('LISTEN transaction_change');
-realTimeClient.on('notification', (msg) => {
-  const payload = JSON.parse(msg.payload);
-  io.to(`user_${payload.user_id}`).emit('transaction_update', payload);
 });
 
 server.listen(3000, () => console.log('Server running on port 3000'));

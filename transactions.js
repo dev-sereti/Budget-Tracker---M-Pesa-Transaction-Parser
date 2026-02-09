@@ -100,10 +100,7 @@ function setActiveChip(container, period) {
     b.classList.toggle("active", b.dataset.period === period);
   });
 }
-
-/* -------------------
-   Date ranges
--------------------- */
+//    Date ranges
 function startOfDay(ms) {
   const d = new Date(ms);
   d.setHours(0, 0, 0, 0);
@@ -181,9 +178,7 @@ function applyCustomFilter() {
   renderTable(filteredTransactions);
 }
 
-/* -------------------
-   Render table
--------------------- */
+//    Render table
 function renderTable(rows) {
   const tbody = document.getElementById("transactionsBody");
   tbody.innerHTML = "";
@@ -213,9 +208,8 @@ function renderTable(rows) {
     });
 }
 
-/* -------------------
-   Excel export
--------------------- */
+
+//    Excel export
 function exportFilteredExcel() {
   const data = filteredTransactions.length ? filteredTransactions : allTransactions;
 

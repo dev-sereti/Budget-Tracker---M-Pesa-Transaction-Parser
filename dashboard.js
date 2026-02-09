@@ -475,9 +475,6 @@ function calculateCategoryTotals(list) {
     categoryTotals[category] = (categoryTotals[category] || 0) + amount;
   });
 }
-
-// Avoid duplicate "Others": aggregated bucket becomes "Other Categories"
-// if a real "Others" category already exists among the top N.
 function getTopCategoriesWithOthers(totals, topN = 5) {
   const entries = Object.entries(totals)
     .map(([category, amount]) => ({ category, amount }))

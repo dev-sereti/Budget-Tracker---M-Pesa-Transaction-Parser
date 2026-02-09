@@ -215,8 +215,8 @@ function normalizeTransactions(list) {
   return { list, changed };
 }
 
-document.addEventListener('DOMContentLoaded', function () {
-  loadData();          // loads budget + transactions
+document.addEventListener('DOMContentLoaded', async function () {
+  await loadData();          // loads budget + transactions from backend
   initBudgetSection(); // wires Set button + renders budget KPI if exists
   initCharts();
   setupPeriodFilter();
@@ -225,8 +225,9 @@ document.addEventListener('DOMContentLoaded', function () {
   applyPresetFilter("thisMonth");
 });
 
-function loadData() {
-  // Load budget from new key, fall back to old key for compatibility
+// Updated to fetch from backend
+async function loadData() {
+  // Load budget from localStorage (keep for now, or migrate to backend if needed)
   const storedBudget = localStorage.getItem(DASHBOARD_BUDGET_KEY);
   const legacyBudget = localStorage.getItem('monthlyIncome');
   let budgetVal = 0;
@@ -242,15 +243,21 @@ function loadData() {
   monthlyIncome = budgetVal;
   currentMonthlyBudget = budgetVal > 0 ? budgetVal : null;
 
-  // Load transactions
-  const saved = localStorage.getItem('budgetTrackerTransactions');
-  allTransactions = saved ? JSON.parse(saved) : [];
+  // Load transactions from backend
+  try {
+    const response = await fetch('/api/transactions', {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`  // Assume token from login
+      }
+    });
+    if (!response.ok) throw new Error('Failed to load transactions');
+    allTransactions = await response.json();
 
-  const normalized = normalizeTransactions(allTransactions);
-  allTransactions = normalized.list;
-
-  if (normalized.changed) {
-    localStorage.setItem('budgetTrackerTransactions', JSON.stringify(allTransactions));
+    const normalized = normalizeTransactions(allTransactions);
+    allTransactions = normalized.list;
+  } catch (err) {
+    console.error('Error loading data:', err);
+    allTransactions = [];
   }
 }
 
@@ -302,13 +309,9 @@ function setActiveChip(container, period) {
   });
 }
 
-function applyPresetFilter(period) {
+// Updated to fetch filtered data from backend
+async function applyPresetFilter(period) {
   const { startMs, endMs, label } = getPresetRange(period);
-
-  filteredTransactions = allTransactions.filter(tx => {
-    const ms = ensureTxDateMs(tx);
-    return ms >= startMs && ms <= endMs;
-  });
 
   const lbl = document.getElementById("dashRangeLabel");
   if (lbl) {
@@ -316,10 +319,27 @@ function applyPresetFilter(period) {
       `${label}: ${new Date(startMs).toLocaleDateString()} → ${new Date(endMs).toLocaleDateString()}`;
   }
 
+  try {
+    const response = await fetch(`/api/transactions?startMs=${startMs}&endMs=${endMs}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    });
+    if (!response.ok) throw new Error('Failed to fetch filtered transactions');
+    filteredTransactions = await response.json();
+
+    const normalized = normalizeTransactions(filteredTransactions);
+    filteredTransactions = normalized.list;
+  } catch (err) {
+    console.error('Error fetching filtered data:', err);
+    filteredTransactions = [];
+  }
+
   updateFromFiltered();
 }
 
-function applyCustomFilter() {
+// Updated to fetch custom filtered data from backend
+async function applyCustomFilter() {
   const fromEl = document.getElementById("dashDateFrom");
   const toEl = document.getElementById("dashDateTo");
   const lbl = document.getElementById("dashRangeLabel");
@@ -337,14 +357,25 @@ function applyCustomFilter() {
     return;
   }
 
-  filteredTransactions = allTransactions.filter(tx => {
-    const ms = ensureTxDateMs(tx);
-    return ms >= startMs && ms <= endMs;
-  });
-
   if (lbl) {
     lbl.textContent =
       `Custom: ${new Date(startMs).toLocaleDateString()} → ${new Date(endMs).toLocaleDateString()}`;
+  }
+
+  try {
+    const response = await fetch(`/api/transactions?startMs=${startMs}&endMs=${endMs}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    });
+    if (!response.ok) throw new Error('Failed to fetch filtered transactions');
+    filteredTransactions = await response.json();
+
+    const normalized = normalizeTransactions(filteredTransactions);
+    filteredTransactions = normalized.list;
+  } catch (err) {
+    console.error('Error fetching filtered data:', err);
+    filteredTransactions = [];
   }
 
   updateFromFiltered();

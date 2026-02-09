@@ -91,7 +91,7 @@ function parseTransactionDateTime(dateStr, timeStr) {
     return Date.now();
 }
 
-function addTransactionToList() {
+async function addTransactionToList() {
     if (!currentParsedData) {
         alert('Please parse a valid transaction first.');
         return;
@@ -119,16 +119,29 @@ function addTransactionToList() {
         timestamp: Date.now() // Keep this for "when was it added to the system"
     };
     
-    // Save to Local Storage
-    let transactions = JSON.parse(localStorage.getItem('budgetTrackerTransactions') || '[]');
-    transactions.push(transaction);
-    localStorage.setItem('budgetTrackerTransactions', JSON.stringify(transactions));
-    
-    alert('Transaction added successfully!');
-    
-    // Clear form
-    document.getElementById('transactionInput').value = '';
-    document.getElementById('categorySelect').value = '';
-    document.getElementById('parsedResults').innerHTML = '';
-    currentParsedData = null;
+    // Save to backend instead of Local Storage
+    try {
+        const response = await fetch('/api/transactions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`  // Assume token from login
+            },
+            body: JSON.stringify(transaction)
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to add transaction');
+        }
+
+        alert('Transaction added successfully!');
+        
+        // Clear form
+        document.getElementById('transactionInput').value = '';
+        document.getElementById('categorySelect').value = '';
+        document.getElementById('parsedResults').innerHTML = '';
+        currentParsedData = null;
+    } catch (err) {
+        alert('Error adding transaction: ' + err.message);
+    }
 }

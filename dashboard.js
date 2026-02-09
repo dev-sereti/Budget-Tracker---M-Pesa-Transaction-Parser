@@ -1,4 +1,8 @@
-let monthlyIncome = 0;
+// ===== Budget & KPI globals =====
+const DASHBOARD_BUDGET_KEY = "dashboardMonthlyBudget";
+
+let monthlyIncome = 0;          // Used for Remaining Balance & Savings Rate
+let currentMonthlyBudget = null;
 
 // Keep ALL transactions here (unfiltered)
 let allTransactions = [];
@@ -27,7 +31,7 @@ const CATEGORY_COLORS = [
   '#14B8A6'  // Teal
 ];
 
-// Stable mapping: category
+// Stable mapping: category -> color
 const categoryColorMap = new Map();
 function getColorForCategory(category) {
   if (categoryColorMap.has(category)) return categoryColorMap.get(category);
@@ -37,7 +41,10 @@ function getColorForCategory(category) {
   return color;
 }
 
-  //  Date helpers (filter ranges)
+/* ============================
+   Date helpers (filter ranges)
+============================ */
+
 function startOfDay(ms) {
   const d = new Date(ms);
   d.setHours(0, 0, 0, 0);
@@ -93,7 +100,10 @@ function getPresetRange(period) {
   };
 }
 
-  //  Transaction date normalization
+/* ============================
+   Transaction date normalization
+============================ */
+
 function parseDmyTimeToMs(dateTimeStr) {
   if (!dateTimeStr || typeof dateTimeStr !== "string") return null;
 
@@ -165,7 +175,12 @@ function normalizeTransactions(list) {
     }
 
     if (tx.balance !== undefined && tx.balance !== null) {
-      const b = Number(String(tx.balance).replace(/ksh/ig, "").replace(/,/g, "").trim());
+      const b = Number(
+        String(tx.balance)
+          .replace(/ksh/ig, "")
+          .replace(/,/g, "")
+          .trim()
+      );
       tx.balance = Number.isFinite(b) ? b : null;
     } else {
       tx.balance = null;
@@ -174,12 +189,14 @@ function normalizeTransactions(list) {
 
   return { list, changed };
 }
+
+/* ============================
+   Init
+============================ */
+
 document.addEventListener('DOMContentLoaded', function () {
-  loadData();
-
-  const setBtn = document.getElementById('setIncome');
-  if (setBtn) setBtn.addEventListener('click', setMonthlyIncome);
-
+  loadData();          // loads budget + transactions
+  initBudgetSection(); // wires Set button + renders budget KPI if exists
   initCharts();
   setupPeriodFilter();
 
@@ -188,9 +205,23 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 function loadData() {
-  monthlyIncome = parseFloat(localStorage.getItem('monthlyIncome') || '0');
-  if (monthlyIncome > 0) document.getElementById('monthlyIncome').value = monthlyIncome;
+  // Load budget from new key, fall back to old key for compatibility
+  const storedBudget = localStorage.getItem(DASHBOARD_BUDGET_KEY);
+  const legacyBudget = localStorage.getItem('monthlyIncome');
+  let budgetVal = 0;
 
+  if (storedBudget !== null && storedBudget !== "") {
+    budgetVal = Number(storedBudget);
+  } else if (legacyBudget !== null && legacyBudget !== "") {
+    budgetVal = Number(legacyBudget);
+  }
+
+  if (!Number.isFinite(budgetVal) || budgetVal < 0) budgetVal = 0;
+
+  monthlyIncome = budgetVal;
+  currentMonthlyBudget = budgetVal > 0 ? budgetVal : null;
+
+  // Load transactions
   const saved = localStorage.getItem('budgetTrackerTransactions');
   allTransactions = saved ? JSON.parse(saved) : [];
 
@@ -201,12 +232,16 @@ function loadData() {
     localStorage.setItem('budgetTrackerTransactions', JSON.stringify(allTransactions));
   }
 }
+
+/* ============================
+   Period Filter
+============================ */
+
 function setupPeriodFilter() {
   const btnWrap = document.getElementById("dashPeriodButtons");
   const customBox = document.getElementById("dashCustomRange");
   const applyBtn = document.getElementById("dashApplyCustom");
 
-  // If HTML not added yet, just return safely
   if (!btnWrap) return;
 
   // Click via event delegation
@@ -220,7 +255,6 @@ function setupPeriodFilter() {
     setActiveChip(btnWrap, period);
 
     if (period === "custom") {
-      // show custom inputs
       if (customBox) customBox.classList.add("show");
       const lbl = document.getElementById("dashRangeLabel");
       if (lbl) lbl.textContent = "Select Date From and Date To, then click Apply.";
@@ -259,7 +293,8 @@ function applyPresetFilter(period) {
 
   const lbl = document.getElementById("dashRangeLabel");
   if (lbl) {
-    lbl.textContent = `${label}: ${new Date(startMs).toLocaleDateString()} → ${new Date(endMs).toLocaleDateString()}`;
+    lbl.textContent =
+      `${label}: ${new Date(startMs).toLocaleDateString()} → ${new Date(endMs).toLocaleDateString()}`;
   }
 
   updateFromFiltered();
@@ -289,30 +324,136 @@ function applyCustomFilter() {
   });
 
   if (lbl) {
-    lbl.textContent = `Custom: ${new Date(startMs).toLocaleDateString()} → ${new Date(endMs).toLocaleDateString()}`;
+    lbl.textContent =
+      `Custom: ${new Date(startMs).toLocaleDateString()} → ${new Date(endMs).toLocaleDateString()}`;
   }
 
   updateFromFiltered();
 }
 
-  //  Budget handling
-function setMonthlyIncome() {
-  const input = document.getElementById('monthlyIncome');
-  const value = parseFloat(input.value);
+/* ============================
+   Monthly Budget UI (Financial Overview)
+============================ */
 
-  if (isNaN(value) || value < 0) {
-    alert("Please enter a valid non-negative number.");
+function initBudgetSection() {
+  const input = document.getElementById('monthlyIncome');
+  const setBtn = document.getElementById('setIncome');
+  if (!input || !setBtn) return;
+
+  // If a budget already exists (loaded from storage), render its KPI card
+  if (monthlyIncome > 0) {
+    currentMonthlyBudget = monthlyIncome;
+    renderBudgetKpi("view");
+  }
+
+  // When user clicks "Set" under Monthly Budget
+  setBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+
+    const raw = input.value.trim();
+    const value = Number(raw);
+
+    if (!raw || isNaN(value) || value < 0) {
+      alert("Please enter a valid non-negative number.");
+      return;
+    }
+
+    // Update globals + storage
+    monthlyIncome = value;
+    currentMonthlyBudget = value;
+    localStorage.setItem(DASHBOARD_BUDGET_KEY, String(value));
+    localStorage.setItem('monthlyIncome', String(value)); // for other pages if needed
+
+    // Clear input as requested
+    input.value = "";
+
+    // Show / update the KPI card in Financial Overview
+    renderBudgetKpi("view");
+
+    // Recompute KPIs based on current filtered data
+    updateFromFiltered();
+  });
+}
+
+// Renders the budget KPI card in "view" or "edit" mode
+function renderBudgetKpi(mode = "view") {
+  const card = document.getElementById("budgetKpiCard");
+  if (!card) return;
+
+  if (!currentMonthlyBudget || currentMonthlyBudget <= 0) {
+    card.classList.add("hidden");
+    card.innerHTML = "";
     return;
   }
 
-  monthlyIncome = value;
-  localStorage.setItem('monthlyIncome', monthlyIncome.toString());
+  card.classList.remove("hidden");
+  const amount = currentMonthlyBudget;
 
-  // Recompute KPIs based on current filtered data
-  updateFromFiltered();
+  if (mode === "edit") {
+    card.innerHTML = `
+      <h3>Monthly Budget</h3>
+      <div class="budget-edit-inline">
+        <input type="number" class="budget-edit-input" value="${amount}" min="0" />
+        <button type="button" class="budget-save-btn">Save</button>
+        <button type="button" class="budget-cancel-btn">Cancel</button>
+      </div>
+    `;
+
+    const editInput = card.querySelector(".budget-edit-input");
+    const saveBtn = card.querySelector(".budget-save-btn");
+    const cancelBtn = card.querySelector(".budget-cancel-btn");
+
+    if (saveBtn && editInput) {
+      saveBtn.addEventListener("click", () => {
+        const raw = editInput.value.trim();
+        const value = Number(raw);
+
+        if (!raw || isNaN(value) || value < 0) {
+          alert("Please enter a valid non-negative number.");
+          editInput.focus();
+          return;
+        }
+
+        currentMonthlyBudget = value;
+        monthlyIncome = value;
+        localStorage.setItem(DASHBOARD_BUDGET_KEY, String(value));
+        localStorage.setItem('monthlyIncome', String(value));
+
+        renderBudgetKpi("view");
+        updateFromFiltered();
+      });
+    }
+
+    if (cancelBtn) {
+      cancelBtn.addEventListener("click", () => {
+        renderBudgetKpi("view");
+      });
+    }
+  } else {
+    const formatted = Number(amount).toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+
+    card.innerHTML = `
+      <h3>Monthly Budget</h3>
+      <div class="kpi-value" id="budgetKpiValue">Ksh ${formatted}</div>
+      <button type="button" class="budget-edit-btn">Edit</button>
+    `;
+
+    const editBtn = card.querySelector(".budget-edit-btn");
+    if (editBtn) {
+      editBtn.addEventListener("click", () => {
+        renderBudgetKpi("edit");
+      });
+    }
+  }
 }
 
-  //  Totals + Charts
+/* ============================
+   Totals + Charts
+============================ */
+
 function calculateCategoryTotals(list) {
   categoryTotals = {};
   list.forEach(transaction => {
@@ -337,11 +478,13 @@ function getTopCategoriesWithOthers(totals, topN = 5) {
 
 function formatCurrency(amount) {
   const n = Number(amount || 0);
-  return `Ksh ${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return `Ksh ${n.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  })}`;
 }
 
 function initCharts() {
-  // DOUGHNUT CHART
   const donutCanvas = document.getElementById('doughnutChart');
   const barCanvas = document.getElementById('barChart');
   if (!donutCanvas || !barCanvas) return;
@@ -366,14 +509,14 @@ function initCharts() {
         legend: { display: false },
         tooltip: {
           callbacks: {
-            label: (context) => `${context.label || ''}: ${formatCurrency(context.raw || 0)}`
+            label: (context) =>
+              `${context.label || ''}: ${formatCurrency(context.raw || 0)}`
           }
         }
       }
     }
   });
 
-  // BAR CHART
   const barCtx = barCanvas.getContext('2d');
   barChart = new Chart(barCtx, {
     type: 'bar',
@@ -399,7 +542,7 @@ function initCharts() {
 }
 
 function updateFromFiltered() {
-  // if nothing filtered yet, default to all for first render
+  // If nothing filtered yet, default to all for first render
   const list = filteredTransactions.length ? filteredTransactions : allTransactions;
 
   calculateCategoryTotals(list);
@@ -407,17 +550,22 @@ function updateFromFiltered() {
   // KPIs based on list
   const totalSpent = list.reduce((sum, t) => sum + Number(t.totalAmount || 0), 0);
   const remainingBalance = monthlyIncome - totalSpent;
-  const savingsRate = monthlyIncome > 0 ? (remainingBalance / monthlyIncome) * 100 : 0;
+  const savingsRate = monthlyIncome > 0
+    ? (remainingBalance / monthlyIncome) * 100
+    : 0;
 
-  document.getElementById('totalSpent').textContent = formatCurrency(totalSpent);
-  document.getElementById('remainingBalance').textContent = formatCurrency(remainingBalance);
-  document.getElementById('savingsRate').textContent = `${savingsRate.toFixed(1)}%`;
-  document.getElementById('donutCenterValue').textContent = formatCurrency(totalSpent);
+  const totalSpentEl = document.getElementById('totalSpent');
+  const remainingBalanceEl = document.getElementById('remainingBalance');
+  const savingsRateEl = document.getElementById('savingsRate');
+  const donutCenterEl = document.getElementById('donutCenterValue');
+
+  if (totalSpentEl) totalSpentEl.textContent = formatCurrency(totalSpent);
+  if (remainingBalanceEl) remainingBalanceEl.textContent = formatCurrency(remainingBalance);
+  if (savingsRateEl) savingsRateEl.textContent = `${savingsRate.toFixed(1)}%`;
+  if (donutCenterEl) donutCenterEl.textContent = formatCurrency(totalSpent);
 
   // Top N + Others
   const topData = getTopCategoriesWithOthers(categoryTotals, TOP_N_CATEGORIES);
-
-  // colors by category
   const colors = topData.map(item => getColorForCategory(item.category));
 
   // Update Donut

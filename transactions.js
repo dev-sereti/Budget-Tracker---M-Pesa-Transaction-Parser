@@ -12,9 +12,9 @@ document.addEventListener("DOMContentLoaded", () => {
   applyPresetFilter("thisMonth");
 });
 
-/* -------------------
-   Load + normalize
--------------------- */
+
+//    Load + normalize
+
 function loadTransactions() {
   const saved = localStorage.getItem("budgetTrackerTransactions");
   allTransactions = saved ? JSON.parse(saved) : [];
@@ -63,9 +63,7 @@ function guessTxDateMs(tx) {
   return Date.now();
 }
 
-/* -------------------
-   Period filter UI
--------------------- */
+//    Period filter UI
 function setupPeriodFilter() {
   const btnWrap = document.getElementById("txPeriodButtons");
   const customBox = document.getElementById("txCustomRange");

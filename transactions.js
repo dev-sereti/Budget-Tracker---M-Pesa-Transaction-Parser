@@ -2,8 +2,8 @@ let allTransactions = [];
 let filteredTransactions = [];
 let currentPeriod = "thisMonth";
 
-document.addEventListener("DOMContentLoaded", () => {
-  loadTransactions();
+document.addEventListener("DOMContentLoaded", async () => {
+  await loadTransactions();
 
   setupPeriodFilter();
   document.getElementById("downloadExcel").addEventListener("click", exportFilteredExcel);
@@ -13,26 +13,23 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 
-//    Load + normalize
+//    Load + normalize (updated to fetch from backend)
+async function loadTransactions() {
+  try {
+    const response = await fetch('/api/transactions', {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`  // Assume token from login
+      }
+    });
+    if (!response.ok) throw new Error('Failed to load transactions');
+    allTransactions = await response.json();
 
-function loadTransactions() {
-  const saved = localStorage.getItem("budgetTrackerTransactions");
-  allTransactions = saved ? JSON.parse(saved) : [];
-
-  // Ensure txDateMs exists for filtering
-  let changed = false;
-  allTransactions.forEach(tx => {
-    if (!Number.isFinite(tx.txDateMs)) {
-      tx.txDateMs = guessTxDateMs(tx);
-      changed = true;
-    }
-    tx.amount = Number(tx.amount || 0);
-    tx.fee = Number(tx.fee || 0);
-    tx.totalAmount = Number(tx.totalAmount ?? (tx.amount + tx.fee));
-    tx.balance = tx.balance !== undefined && tx.balance !== null ? Number(tx.balance) : null;
-  });
-
-  if (changed) localStorage.setItem("budgetTrackerTransactions", JSON.stringify(allTransactions));
+    const normalized = normalizeTransactions(allTransactions);
+    allTransactions = normalized.list;
+  } catch (err) {
+    console.error('Error loading transactions:', err);
+    allTransactions = [];
+  }
 }
 
 function guessTxDateMs(tx) {
@@ -145,19 +142,35 @@ function getPresetRange(period) {
   return { startMs: startOfDay(msStart), endMs: endOfDay(msEnd), label: "This Month" };
 }
 
-function applyPresetFilter(period) {
+// Updated to fetch from backend
+async function applyPresetFilter(period) {
   currentPeriod = period;
   const { startMs, endMs, label } = getPresetRange(period);
-
-  filteredTransactions = allTransactions.filter(tx => tx.txDateMs >= startMs && tx.txDateMs <= endMs);
 
   document.getElementById("txRangeLabel").textContent =
     `${label}: ${new Date(startMs).toLocaleDateString()} → ${new Date(endMs).toLocaleDateString()}`;
 
+  try {
+    const response = await fetch(`/api/transactions?startMs=${startMs}&endMs=${endMs}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    });
+    if (!response.ok) throw new Error('Failed to fetch filtered transactions');
+    filteredTransactions = await response.json();
+
+    const normalized = normalizeTransactions(filteredTransactions);
+    filteredTransactions = normalized.list;
+  } catch (err) {
+    console.error('Error fetching filtered transactions:', err);
+    filteredTransactions = [];
+  }
+
   renderTable(filteredTransactions);
 }
 
-function applyCustomFilter() {
+// Updated to fetch from backend
+async function applyCustomFilter() {
   const fromVal = document.getElementById("txDateFrom").value;
   const toVal = document.getElementById("txDateTo").value;
 
@@ -168,10 +181,24 @@ function applyCustomFilter() {
 
   if (endMs < startMs) return alert("Date To must be on/after Date From.");
 
-  filteredTransactions = allTransactions.filter(tx => tx.txDateMs >= startMs && tx.txDateMs <= endMs);
-
   document.getElementById("txRangeLabel").textContent =
     `Custom: ${new Date(startMs).toLocaleDateString()} → ${new Date(endMs).toLocaleDateString()}`;
+
+  try {
+    const response = await fetch(`/api/transactions?startMs=${startMs}&endMs=${endMs}`, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    });
+    if (!response.ok) throw new Error('Failed to fetch filtered transactions');
+    filteredTransactions = await response.json();
+
+    const normalized = normalizeTransactions(filteredTransactions);
+    filteredTransactions = normalized.list;
+  } catch (err) {
+    console.error('Error fetching filtered transactions:', err);
+    filteredTransactions = [];
+  }
 
   renderTable(filteredTransactions);
 }

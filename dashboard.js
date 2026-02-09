@@ -475,6 +475,11 @@ function initCharts() {
   const barCanvas = document.getElementById('barChart');
   if (!donutCanvas || !barCanvas) return;
 
+  // Register data labels plugin if it exists (chartjs-plugin-datalabels)
+  if (window.ChartDataLabels) {
+    Chart.register(ChartDataLabels);
+  }
+
   const donutCtx = donutCanvas.getContext('2d');
   doughnutChart = new Chart(donutCtx, {
     type: 'doughnut',
@@ -498,6 +503,21 @@ function initCharts() {
             label: (context) =>
               `${context.label || ''}: ${formatCurrency(context.raw || 0)}`
           }
+        },
+        // Show data labels on each doughnut slice
+        datalabels: {
+          color: '#111827',
+          font: {
+            weight: '600',
+            size: 10
+          },
+          formatter: (value) => {
+            if (!value) return '';
+            const n = Number(value || 0);
+            return `Ksh ${n.toLocaleString(undefined, {
+              maximumFractionDigits: 0
+            })}`;
+          }
         }
       }
     }
@@ -518,7 +538,26 @@ function initCharts() {
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
+      plugins: {
+        legend: { display: false },
+        // Show data labels on top of each bar
+        datalabels: {
+          anchor: 'end',
+          align: 'end',
+          color: '#111827',
+          font: {
+            weight: '600',
+            size: 10
+          },
+          formatter: (value) => {
+            if (!value) return '';
+            const n = Number(value || 0);
+            return `Ksh ${n.toLocaleString(undefined, {
+              maximumFractionDigits: 0
+            })}`;
+          }
+        }
+      },
       scales: {
         y: { beginAtZero: true },
         x: { display: false }
@@ -562,7 +601,7 @@ function updateFromFiltered() {
     doughnutChart.update();
   }
 
-  // Update Bar colors
+  // Update Bar (same colors as donut)
   if (barChart) {
     barChart.data.labels = topData.map(item => item.category);
     barChart.data.datasets[0].data = topData.map(item => item.amount);

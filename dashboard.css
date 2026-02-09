@@ -110,19 +110,35 @@
     color: #222;
 }
 
-.donut-legend-note {
-    text-align: center;
-    font-size: 0.8rem;
-    color: #666;
-    margin-top: 6px;
+/* Legend Styles */
+.chart-legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 12px;
+    font-size: 0.85rem;
+    color: #444;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
 }
 
 .bar-box {
     width: 100%;
-    height: 240px;
+    height: 220px;
 }
 
 .bar-box canvas {
     width: 100% !important;
-    height: 240px !important;
+    height: 220px !important;
 }

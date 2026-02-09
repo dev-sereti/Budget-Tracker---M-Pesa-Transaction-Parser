@@ -436,7 +436,7 @@ function updateFromFiltered() {
     barChart.update();
   }
 
-  // Update HTML legends (bar + optional donut legend)
+  // Update HTML legends
   const legendHTML = topData.map((item, idx) => `
     <div class="legend-item">
       <div class="legend-color" style="background-color:${colors[idx]}"></div>

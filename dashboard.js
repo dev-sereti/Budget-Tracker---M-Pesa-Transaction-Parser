@@ -93,11 +93,7 @@ function getPresetRange(period) {
   };
 }
 
-/* ---------------------------
-   Transaction date normalization
----------------------------- */
-
-// Parses "6/2/26 7:17 AM" as dd/mm/yy
+  //  Transaction date normalization
 function parseDmyTimeToMs(dateTimeStr) {
   if (!dateTimeStr || typeof dateTimeStr !== "string") return null;
 

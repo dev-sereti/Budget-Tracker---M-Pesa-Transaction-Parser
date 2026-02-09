@@ -305,9 +305,7 @@ function applyCustomFilter() {
   updateFromFiltered();
 }
 
-/* ---------------------------
-   Budget handling
----------------------------- */
+  //  Budget handling
 function setMonthlyIncome() {
   const input = document.getElementById('monthlyIncome');
   const value = parseFloat(input.value);

@@ -277,12 +277,7 @@ td {
 .download-btn:hover{ filter:brightness(0.95); }
 .download-btn:active{ transform:translateY(1px); }
 
-/* =========================
-   Period Filter (chips + custom range)
-   Uses classes from your HTML:
-   .period-section, .period-filter, .period-buttons, .chip,
-   .custom-range, .apply-btn, .range-label
-   ========================= */
+   /* Period Filter (chips + custom range) */
 .period-section{
   margin-top: 10px;
   padding: 14px;

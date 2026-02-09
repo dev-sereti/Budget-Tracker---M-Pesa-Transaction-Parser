@@ -7,7 +7,7 @@
 
     <!-- Global styles -->
     <link rel="stylesheet" href="style.css" />
-    <!-- Dashboard-specific styles (includes budget card styles) -->
+    <!-- Dashboard-specific styles -->
     <link rel="stylesheet" href="dashboard.css" />
 
     <!-- Charts -->
@@ -21,9 +21,9 @@
         </header>
 
         <main>
-            <!-- =======================
-                 MONTHLY BUDGET
-            ======================== -->
+          
+                 <!-- MONTHLY BUDGET -->
+          
             <section class="income-section">
                 <h2>Monthly Budget</h2>
 
@@ -37,14 +37,10 @@
                     />
                     <button id="setIncome">Set</button>
                 </div>
-
-                <!-- Budget card will be rendered/updated here by dashboard.js -->
-                <div id="budgetCardContainer"></div>
+          
             </section>
-
-            <!-- =======================
-                 PERIOD FILTER
-            ======================== -->
+                 <!-- PERIOD FILTER -->
+          
             <section class="period-section">
                 <h2>Period Filter</h2>
 
@@ -75,6 +71,10 @@
             <section class="kpi-section">
                 <h2>Financial Overview</h2>
                 <div class="kpi-cards">
+                    <!-- Budget KPI card: created/updated by dashboard.js;
+                         hidden until a budget is set or loaded -->
+                    <div class="kpi-card hidden" id="budgetKpiCard"></div>
+
                     <div class="kpi-card">
                         <h3>Total Spent</h3>
                         <div id="totalSpent" class="kpi-value">Ksh 0.00</div>
@@ -135,7 +135,7 @@
         </footer>
     </div>
 
-    <!-- Dashboard logic (handles budget card, filters, charts, etc.) -->
+    <!-- Dashboard logic (handles budget, filters, charts, etc.) -->
     <script src="dashboard.js"></script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-// ===== Budget & KPI globals =====
+//  Budget & KPI globals 
 const DASHBOARD_BUDGET_KEY = "dashboardMonthlyBudget";
 
 let monthlyIncome = 0;          // Used for Remaining Balance & Savings Rate
@@ -41,9 +41,9 @@ function getColorForCategory(category) {
   return color;
 }
 
-/* ============================
+/* ===
    Date helpers (filter ranges)
-============================ */
+=== */
 
 function startOfDay(ms) {
   const d = new Date(ms);
@@ -100,9 +100,9 @@ function getPresetRange(period) {
   };
 }
 
-/* ============================
+/* ===
    Transaction date normalization
-============================ */
+=== */
 
 function parseDmyTimeToMs(dateTimeStr) {
   if (!dateTimeStr || typeof dateTimeStr !== "string") return null;
@@ -190,9 +190,9 @@ function normalizeTransactions(list) {
   return { list, changed };
 }
 
-/* ============================
+/* ===
    Init
-============================ */
+=== */
 
 document.addEventListener('DOMContentLoaded', function () {
   loadData();          // loads budget + transactions
@@ -233,9 +233,9 @@ function loadData() {
   }
 }
 
-/* ============================
+/* ===
    Period Filter
-============================ */
+=== */
 
 function setupPeriodFilter() {
   const btnWrap = document.getElementById("dashPeriodButtons");
@@ -331,9 +331,9 @@ function applyCustomFilter() {
   updateFromFiltered();
 }
 
-/* ============================
+/* ===
    Monthly Budget UI (Financial Overview)
-============================ */
+=== */
 
 function initBudgetSection() {
   const input = document.getElementById('monthlyIncome');
@@ -450,9 +450,9 @@ function renderBudgetKpi(mode = "view") {
   }
 }
 
-/* ============================
+/* ===
    Totals + Charts
-============================ */
+=== */
 
 function calculateCategoryTotals(list) {
   categoryTotals = {};

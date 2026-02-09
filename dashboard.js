@@ -363,7 +363,7 @@ function initCharts() {
       maintainAspectRatio: false,
       cutout: '70%',
       plugins: {
-        legend: { display: false }, // we use HTML legends
+        legend: { display: false },
         tooltip: {
           callbacks: {
             label: (context) => `${context.label || ''}: ${formatCurrency(context.raw || 0)}`

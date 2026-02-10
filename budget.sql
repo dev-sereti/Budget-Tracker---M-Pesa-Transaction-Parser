@@ -4,7 +4,7 @@ CREATE DATABASE budget_tracker_db;
 -- Connect to the database
 \c budget_tracker_db
 
--- Step 2: Enable extensions for security, UUIDs, and encryption
+-- Enable extensions for security, UUIDs, and encryption
 CREATE EXTENSION IF NOT EXISTS pgcrypto;     -- For encryption/hashing
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";  -- For UUID generation
 

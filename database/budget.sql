@@ -1,4 +1,4 @@
--- Create the database (run as postgres superuser)
+-- Create the database
 CREATE DATABASE budget_tracker_db;
 
 -- Connect to the database

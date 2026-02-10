@@ -71,7 +71,7 @@ CREATE TRIGGER trig_transactions_update
 BEFORE UPDATE ON transactions
 FOR EACH ROW EXECUTE PROCEDURE update_timestamp();
 
--- Materialized view for dashboard aggregates (fast KPIs/charts in dashboard.js)
+-- Materialized view for dashboard aggregates
 CREATE MATERIALIZED VIEW dashboard_aggregates AS
 SELECT 
   user_id,
@@ -94,14 +94,14 @@ GRANT SELECT ON users TO app_user;
 CREATE ROLE app_admin INHERIT app_user;
 GRANT ALL ON ALL TABLES IN SCHEMA public TO app_admin;
 
--- Row-Level Security (users only access their data)
+-- Row-Level Security
 ALTER TABLE transactions ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY user_transactions ON transactions
   USING (user_id = current_setting('app.current_user_id')::UUID)
   FOR ALL;
 
--- Auditing for changes (logs updates/deletes for security)
+-- Auditing for changes
 CREATE TABLE audit_log (
   log_id SERIAL PRIMARY KEY,
   table_name TEXT,

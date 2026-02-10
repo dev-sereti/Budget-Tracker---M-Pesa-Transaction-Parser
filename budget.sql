@@ -20,7 +20,7 @@ CREATE TABLE users (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Categories table (predefined from script.js dropdown)
+-- Categories table
 CREATE TABLE categories (
   category_id SERIAL PRIMARY KEY,
   name VARCHAR(50) UNIQUE NOT NULL,

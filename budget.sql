@@ -39,7 +39,7 @@ CREATE TABLE transactions (
   transaction_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
   category_id INTEGER REFERENCES categories(category_id) ON DELETE SET NULL,
-  date TEXT,          -- e.g., "6/2/26 7:17 AM"
+  date TEXT,          -- e.g., "6/2/26"
   code VARCHAR(20),   -- e.g., "UB6676349H"
   amount NUMERIC(15,2) DEFAULT 0,
   fee NUMERIC(15,2) DEFAULT 0,

@@ -8,7 +8,6 @@ CREATE DATABASE budget_tracker_db;
 CREATE EXTENSION IF NOT EXISTS pgcrypto;     -- For encryption/hashing
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";  -- For UUID generation
 
--- Step 3: Create tables
 
 -- Users table (for authentication and multi-user support)
 CREATE TABLE users (
@@ -86,8 +85,6 @@ WHERE deleted_at IS NULL
 GROUP BY user_id, category_id;
 
 CREATE INDEX idx_dashboard_aggregates_user_id ON dashboard_aggregates(user_id);
-
--- Step 4: Security Setup
 
 -- Roles for RBAC
 CREATE ROLE app_user NOLOGIN;

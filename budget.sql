@@ -34,7 +34,7 @@ INSERT INTO categories (name) VALUES
   ('Entertainment'), ('Mobile'), ('Housing'), ('Authenticity'),
   ('Others'), ('Clothing');
 
--- Transactions table (maps to parsed data in script.js)
+-- Transactions table.
 CREATE TABLE transactions (
   transaction_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
@@ -52,7 +52,7 @@ CREATE TABLE transactions (
   deleted_at TIMESTAMP  -- For soft deletes
 );
 
--- Indexes for performance (fast filtering for transaction.js and dashboard.js)
+-- Indexes for performance
 CREATE INDEX idx_transactions_user_id ON transactions(user_id);
 CREATE INDEX idx_transactions_tx_date_ms ON transactions(tx_date_ms);
 CREATE INDEX idx_transactions_category_id ON transactions(category_id);

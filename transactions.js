@@ -1,11 +1,13 @@
 let allTransactions = [];
 let filteredTransactions = [];
 let currentPeriod = "thisMonth";
+let isSearchActive = false;
 
 document.addEventListener("DOMContentLoaded", async () => {
   await loadTransactions();
 
   setupPeriodFilter();
+  setupSearch();
   document.getElementById("downloadExcel").addEventListener("click", exportFilteredExcel);
 
   // Default
@@ -13,12 +15,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 
-//    Load + normalize (updated to fetch from backend)
+// ── Load + normalize (fetch from backend) ──
 async function loadTransactions() {
   try {
     const response = await fetch('/api/transactions', {
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`  // Assume token from login
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
       }
     });
     if (!response.ok) throw new Error('Failed to load transactions');
@@ -33,10 +35,8 @@ async function loadTransactions() {
 }
 
 function guessTxDateMs(tx) {
-  // Prefer timestamp field if exists
   if (Number.isFinite(tx.timestamp)) return tx.timestamp;
 
-  // Parse "6/2/26 7:17 AM"
   if (typeof tx.date === "string") {
     const m = tx.date.trim().match(
       /^(\d{1,2})\/(\d{1,2})\/(\d{2,4})\s+(\d{1,2}):(\d{2})\s*([AP]M)$/i
@@ -60,7 +60,95 @@ function guessTxDateMs(tx) {
   return Date.now();
 }
 
-//    Period filter UI
+
+// ── Search by Transaction Code ──
+function setupSearch() {
+  const txSearchInput = document.getElementById("txSearchInput");
+  const txSearchBtn = document.getElementById("txSearchBtn");
+  const txClearSearchBtn = document.getElementById("txClearSearchBtn");
+
+  txSearchBtn.addEventListener("click", performSearch);
+
+  txSearchInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") performSearch();
+  });
+
+  txSearchInput.addEventListener("paste", () => {
+    setTimeout(performSearch, 150);
+  });
+
+  txClearSearchBtn.addEventListener("click", clearSearch);
+}
+
+function performSearch() {
+  const txSearchInput = document.getElementById("txSearchInput");
+  const txClearSearchBtn = document.getElementById("txClearSearchBtn");
+  const txSearchResultLabel = document.getElementById("txSearchResultLabel");
+
+  const query = txSearchInput.value.trim().toLowerCase();
+
+  if (!query) {
+    txSearchResultLabel.textContent = "Please enter a transaction code.";
+    txSearchResultLabel.style.color = "#e67e22";
+    return;
+  }
+
+  // Search across ALL transactions, not just the current filtered view
+  const matches = allTransactions.filter(tx => {
+    const code = (tx.code || "").toLowerCase();
+    return code === query || code.includes(query);
+  });
+
+  if (matches.length > 0) {
+    isSearchActive = true;
+    filteredTransactions = matches;
+
+    txSearchResultLabel.textContent = `✅ ${matches.length} transaction${matches.length > 1 ? "s" : ""} found!`;
+    txSearchResultLabel.style.color = "#27ae60";
+
+    // Deactivate period chips visually
+    const btnWrap = document.getElementById("txPeriodButtons");
+    [...btnWrap.querySelectorAll(".chip")].forEach(b => b.classList.remove("active"));
+
+    document.getElementById("txRangeLabel").textContent = `Showing search results for "${txSearchInput.value.trim()}"`;
+
+    renderTable(filteredTransactions, query);
+  } else {
+    isSearchActive = true;
+    filteredTransactions = [];
+
+    txSearchResultLabel.textContent = `❌ No transaction found for "${txSearchInput.value.trim()}"`;
+    txSearchResultLabel.style.color = "#e74c3c";
+
+    renderTable([]);
+  }
+
+  txClearSearchBtn.style.display = "inline-block";
+}
+
+function clearSearch() {
+  const txSearchInput = document.getElementById("txSearchInput");
+  const txClearSearchBtn = document.getElementById("txClearSearchBtn");
+  const txSearchResultLabel = document.getElementById("txSearchResultLabel");
+
+  txSearchInput.value = "";
+  txSearchResultLabel.textContent = "";
+  txClearSearchBtn.style.display = "none";
+  isSearchActive = false;
+
+  // Remove all highlights
+  document.querySelectorAll("#transactionsBody tr").forEach(row => {
+    row.classList.remove("highlight-row");
+  });
+
+  // Re-apply the last active period filter
+  const btnWrap = document.getElementById("txPeriodButtons");
+  setActiveChip(btnWrap, currentPeriod);
+  applyPresetFilter(currentPeriod);
+}
+
+
+// ── Period filter UI ──
 function setupPeriodFilter() {
   const btnWrap = document.getElementById("txPeriodButtons");
   const customBox = document.getElementById("txCustomRange");
@@ -72,6 +160,18 @@ function setupPeriodFilter() {
 
     const period = btn.dataset.period;
     setActiveChip(btnWrap, period);
+
+    // Clear any active search when switching periods
+    if (isSearchActive) {
+      const txSearchInput = document.getElementById("txSearchInput");
+      const txClearSearchBtn = document.getElementById("txClearSearchBtn");
+      const txSearchResultLabel = document.getElementById("txSearchResultLabel");
+
+      txSearchInput.value = "";
+      txSearchResultLabel.textContent = "";
+      txClearSearchBtn.style.display = "none";
+      isSearchActive = false;
+    }
 
     if (period === "custom") {
       currentPeriod = "custom";
@@ -95,7 +195,9 @@ function setActiveChip(container, period) {
     b.classList.toggle("active", b.dataset.period === period);
   });
 }
-//    Date ranges
+
+
+// ── Date ranges ──
 function startOfDay(ms) {
   const d = new Date(ms);
   d.setHours(0, 0, 0, 0);
@@ -108,7 +210,6 @@ function endOfDay(ms) {
   return d.getTime();
 }
 
-// Monday-start week
 function startOfThisWeek(now = new Date()) {
   const day = now.getDay();
   const diffToMonday = (day + 6) % 7;
@@ -136,13 +237,11 @@ function getPresetRange(period) {
     return { startMs: lastWeekStart, endMs: lastWeekEnd, label: "Last Week" };
   }
 
-  // thisMonth default
   const msStart = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
   const msEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0).getTime();
   return { startMs: startOfDay(msStart), endMs: endOfDay(msEnd), label: "This Month" };
 }
 
-// Updated to fetch from backend
 async function applyPresetFilter(period) {
   currentPeriod = period;
   const { startMs, endMs, label } = getPresetRange(period);
@@ -169,7 +268,6 @@ async function applyPresetFilter(period) {
   renderTable(filteredTransactions);
 }
 
-// Updated to fetch from backend
 async function applyCustomFilter() {
   const fromVal = document.getElementById("txDateFrom").value;
   const toVal = document.getElementById("txDateTo").value;
@@ -203,38 +301,58 @@ async function applyCustomFilter() {
   renderTable(filteredTransactions);
 }
 
-//    Render table
-function renderTable(rows) {
+
+// ── Render table (with optional highlight query) ──
+function renderTable(rows, highlightQuery = "") {
   const tbody = document.getElementById("transactionsBody");
   tbody.innerHTML = "";
 
   if (!rows.length) {
     tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:16px;color:#666;">
-      No transactions found for this period.
+      No transactions found${isSearchActive ? " for this search" : " for this period"}.
     </td></tr>`;
     return;
   }
 
-  rows
-    .slice()
-    .sort((a, b) => b.txDateMs - a.txDateMs)
-    .forEach(tx => {
-      tbody.innerHTML += `
-        <tr>
-          <td>${tx.date || "-"}</td>
-          <td>${tx.code || "-"}</td>
-          <td>Ksh ${tx.amount.toFixed(2)}</td>
-          <td>Ksh ${tx.fee.toFixed(2)}</td>
-          <td><span class="category-badge">${tx.category || "Others"}</span></td>
-          <td><b>Ksh ${tx.totalAmount.toFixed(2)}</b></td>
-          <td>${tx.balance === null ? "-" : `Ksh ${tx.balance.toFixed(2)}`}</td>
-        </tr>
-      `;
-    });
+  const sorted = rows.slice().sort((a, b) => b.txDateMs - a.txDateMs);
+
+  sorted.forEach(tx => {
+    const row = document.createElement("tr");
+
+    // Highlight if this row matches the search query
+    if (highlightQuery) {
+      const code = (tx.code || "").toLowerCase();
+      if (code === highlightQuery || code.includes(highlightQuery)) {
+        row.classList.add("highlight-row");
+      }
+    }
+
+    row.innerHTML = `
+      <td>${tx.date || "-"}</td>
+      <td>${tx.code || "-"}</td>
+      <td>Ksh ${tx.amount.toFixed(2)}</td>
+      <td>Ksh ${tx.fee.toFixed(2)}</td>
+      <td><span class="category-badge">${tx.category || "Others"}</span></td>
+      <td><b>Ksh ${tx.totalAmount.toFixed(2)}</b></td>
+      <td>${tx.balance === null ? "-" : `Ksh ${tx.balance.toFixed(2)}`}</td>
+    `;
+
+    tbody.appendChild(row);
+  });
+
+  // Scroll to the first highlighted row if search is active
+  if (highlightQuery) {
+    const firstHighlight = tbody.querySelector(".highlight-row");
+    if (firstHighlight) {
+      setTimeout(() => {
+        firstHighlight.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 200);
+    }
+  }
 }
 
 
-//    Excel export
+// ── Excel export ──
 function exportFilteredExcel() {
   const data = filteredTransactions.length ? filteredTransactions : allTransactions;
 

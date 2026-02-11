@@ -408,6 +408,80 @@ td {
   font-size:0.8rem;
   font-weight:700;
 }
+/* ── Search Bar ── */
+.search-section {
+    margin-bottom: 1rem;
+}
+
+.search-bar {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.search-bar input {
+    flex: 1;
+    min-width: 200px;
+    padding: 0.6rem 1rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.search-bar input:focus {
+    border-color: #4a90d9;
+    box-shadow: 0 0 0 2px rgba(74, 144, 217, 0.2);
+}
+
+.search-btn {
+    padding: 0.6rem 1.2rem;
+    background-color: #4a90d9;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: background-color 0.2s;
+}
+
+.search-btn:hover {
+    background-color: #357abd;
+}
+
+.clear-search-btn {
+    padding: 0.6rem 1rem;
+    background-color: #e74c3c;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: background-color 0.2s;
+}
+
+.clear-search-btn:hover {
+    background-color: #c0392b;
+}
+
+.search-result-label {
+    margin-top: 0.4rem;
+    font-size: 0.85rem;
+    color: #666;
+}
+
+/* Highlight the matched row */
+.highlight-row {
+    background-color: #fff9c4 !important;
+    animation: highlightFade 2s ease-in-out;
+}
+
+@keyframes highlightFade {
+    0%   { background-color: #ffe082; }
+    100% { background-color: #fff9c4; }
+}
 
 
    /* Responsive tweaks */

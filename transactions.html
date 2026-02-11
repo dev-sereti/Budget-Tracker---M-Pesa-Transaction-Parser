@@ -22,7 +22,22 @@
                     <button id="downloadExcel" class="download-btn">Download Excel</button>
                 </div>
 
-                <!--  PERIOD FILTER (NEW) -->
+                <!-- SEARCH BY TRANSACTION CODE (NEW) -->
+                <section class="search-section" style="margin-top: 10px;">
+                    <div class="search-bar">
+                        <input
+                            type="text"
+                            id="txSearchInput"
+                            placeholder="Paste or type transaction code..."
+                            autocomplete="off"
+                        >
+                        <button type="button" id="txSearchBtn" class="search-btn">Search</button>
+                        <button type="button" id="txClearSearchBtn" class="clear-search-btn" style="display:none;">Clear</button>
+                    </div>
+                    <div class="search-result-label" id="txSearchResultLabel"></div>
+                </section>
+
+                <!--  PERIOD FILTER -->
                 <section class="period-section" style="margin-top: 10px;">
                     <h2 style="font-size: 1.1rem;">Period Filter</h2>
 
